@@ -1,0 +1,11 @@
+@tailwind utilities;
+
+/* Make html, body, and root take full height */
+html, body, #root {
+  height: 100%;
+}
+
+/* Body background */
+body {
+  background: #f8fafc;
+}

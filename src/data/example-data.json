@@ -1,0 +1,74 @@
+{
+  "personalInfo": {
+    "name": "John Doe",
+    "email": "john.doe@example.com",
+    "contact": "+1234567890",
+    "address": "123 Main Street, New York, USA",
+    "linkedin": "https://linkedin.com/in/johndoe",
+    "github": "https://github.com/johndoe",
+    "portfolio": "https://johndoe.dev",
+    "socialLinks": ["https://twitter.com/johndoe"]
+  },
+  "summary": "Backend engineer with 5+ years of experience building scalable systems in Python and Node.js.",
+  "workExperience": [
+    {
+      "company": "TechCorp",
+      "role": "Senior Backend Engineer",
+      "startDate": "2020-01",
+      "endDate": "2023-06",
+      "description": [
+        "Led a team of 4 engineers to build a microservices-based platform",
+        "Optimized API performance, reducing latency by 35%"
+      ]
+    },
+    {
+      "company": "StartupX",
+      "role": "Software Engineer",
+      "startDate": "2017-05",
+      "endDate": "2019-12",
+      "description": "Developed REST APIs and integrated third-party payment services."
+    }
+  ],
+  "education": [
+    {
+      "institution": "University of Example",
+      "degree": "B.Sc. in Computer Science",
+      "startDate": "2013-09",
+      "endDate": "2017-06"
+    }
+  ],
+  "projects": [
+    {
+      "title": "VisaVision",
+      "description": "A platform to analyze and visualize H-1B visa application data using Flask, MongoDB, and D3.js.",
+      "link": "https://github.com/johndoe/visavision"
+    }
+  ],
+  "skills": [
+    {
+      "category": "Programming",
+      "items": ["Python", "Node.js", "JavaScript", "TypeScript"]
+    },
+    {
+      "category": "Databases",
+      "items": ["MongoDB", "PostgreSQL"]
+    },
+    {
+      "category": "Tools",
+      "items": ["Docker", "Git", "AWS"]
+    }
+  ],
+  "achievements": [
+    "Winner of 2021 HackathonX",
+    "Published research paper on AI in healthcare"
+  ],
+  "template": "modern-pro",
+  "colorScheme": "teal",
+  "fontStyle": "serif",
+  "_docxParts": {
+    "summary": [],
+    "workExperience": [],
+    "projects": [],
+    "achievements": []
+  }
+}

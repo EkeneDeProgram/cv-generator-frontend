@@ -1,7 +1,7 @@
 import { createContext } from "react";
 import type { CVData } from "../types/cv";
 
-// 🔹 Defines the shape of data & functions that will live in the CV context
+// Defines the shape of data & functions that will live in the CV context
 type CVContextType = {
   // The actual CV data object
   cv: CVData;
@@ -16,6 +16,6 @@ type CVContextType = {
   loadExample: () => void;
 };
 
-// 🔹 Create the React Context with the defined type
+// Create the React Context with the defined type
 // Default value is `null` until provided by a <CVProvider>
 export const CVContext = createContext<CVContextType | null>(null);

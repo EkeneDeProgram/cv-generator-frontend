@@ -4,6 +4,9 @@ import { eduItemSchema } from "../../utils/validation";
 import { z } from "zod";
 import { useCV } from "../../context/useCV";
 import { v4 as uuidv4 } from "uuid";
+import { useEffect, useState, useMemo } from "react";
+import { useDebounce } from "../../hooks/useDebounce";
+import { useSyncFormWithCV } from "../../utils/useSyncFormWithCV";
 
 const schema = z.object({
   education: z.array(eduItemSchema),
@@ -13,8 +16,9 @@ type FormType = z.infer<typeof schema>;
 
 export default function EducationForm() {
   const { cv, setCV } = useCV();
+  const [isSaving, setIsSaving] = useState(false);
 
-  const { control, register, handleSubmit, formState: { errors } } = useForm<FormType>({
+  const { control, register, watch, reset, formState: { errors, isDirty } } = useForm<FormType>({
     resolver: zodResolver(schema),
     defaultValues: {
       education:
@@ -22,15 +26,38 @@ export default function EducationForm() {
           ? cv.education
           : [{ id: uuidv4(), institution: "", degree: "", startDate: "", endDate: "" }],
     },
+    mode: "onChange",
   });
+
+  // Memoize the CV slice to prevent infinite loops
+  const educationSlice = useMemo(() => {
+    return cv.education?.length > 0
+      ? { education: cv.education }
+      : { education: [{ id: uuidv4(), institution: "", degree: "", startDate: "", endDate: "" }] };
+  }, [cv.education]);
+
+  // Sync form safely
+  useSyncFormWithCV<FormType>(educationSlice, reset);
 
   const { fields, append, remove } = useFieldArray({
     control,
     name: "education",
   });
 
-  const onSave = (data: FormType) =>
-    setCV(prev => ({ ...prev, education: data.education }));
+  const watchedEducation = watch("education");
+  const debouncedEducation = useDebounce(watchedEducation, 500);
+
+  // Auto-save debounced changes
+  useEffect(() => {
+    if (!isDirty) return;
+    setIsSaving(true);
+    setCV(prev => ({
+      ...prev,
+      education: debouncedEducation,
+    }));
+    const timer = setTimeout(() => setIsSaving(false), 200);
+    return () => clearTimeout(timer);
+  }, [debouncedEducation, setCV, isDirty]);
 
   // Inline Styles
   const formWrapperStyle: React.CSSProperties = {
@@ -83,6 +110,8 @@ export default function EducationForm() {
     ...buttonStyle,
     backgroundColor: "#4f46e5",
     color: "#ffffff",
+    opacity: isSaving ? 0.6 : 1,
+    cursor: isSaving ? "not-allowed" : "pointer",
   };
 
   const primaryHoverStyle: React.CSSProperties = {
@@ -110,10 +139,8 @@ export default function EducationForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSave)} style={formWrapperStyle}>
-      <h2 style={{ fontSize: "1.5rem", fontWeight: 700, color: "#1f2937" }}>
-        Education
-      </h2>
+    <form style={formWrapperStyle}>
+      <h2 style={{ fontSize: "1.5rem", fontWeight: 700, color: "#1f2937" }}>Education</h2>
 
       {fields.map((f, idx) => (
         <div key={f.id} style={cardStyle}>
@@ -121,8 +148,8 @@ export default function EducationForm() {
             {...register(`education.${idx}.institution`)}
             placeholder="Institution"
             style={inputStyle}
-            onFocus={(e) => Object.assign(e.currentTarget.style, inputFocusStyle)}
-            onBlur={(e) => (e.currentTarget.style.borderColor = "#d1d5db")}
+            onFocus={e => Object.assign(e.currentTarget.style, inputFocusStyle)}
+            onBlur={e => (e.currentTarget.style.borderColor = "#d1d5db")}
           />
           {errors.education?.[idx]?.institution && (
             <p style={{ color: "#ef4444", fontSize: "0.875rem" }}>
@@ -134,8 +161,8 @@ export default function EducationForm() {
             {...register(`education.${idx}.degree`)}
             placeholder="Degree"
             style={inputStyle}
-            onFocus={(e) => Object.assign(e.currentTarget.style, inputFocusStyle)}
-            onBlur={(e) => (e.currentTarget.style.borderColor = "#d1d5db")}
+            onFocus={e => Object.assign(e.currentTarget.style, inputFocusStyle)}
+            onBlur={e => (e.currentTarget.style.borderColor = "#d1d5db")}
           />
           {errors.education?.[idx]?.degree && (
             <p style={{ color: "#ef4444", fontSize: "0.875rem" }}>
@@ -148,27 +175,23 @@ export default function EducationForm() {
               {...register(`education.${idx}.startDate`)}
               placeholder="Start Date"
               style={{ ...inputStyle, flex: 1 }}
-              onFocus={(e) => Object.assign(e.currentTarget.style, inputFocusStyle)}
-              onBlur={(e) => (e.currentTarget.style.borderColor = "#d1d5db")}
+              onFocus={e => Object.assign(e.currentTarget.style, inputFocusStyle)}
+              onBlur={e => (e.currentTarget.style.borderColor = "#d1d5db")}
             />
             <input
               {...register(`education.${idx}.endDate`)}
               placeholder="End Date"
               style={{ ...inputStyle, flex: 1 }}
-              onFocus={(e) => Object.assign(e.currentTarget.style, inputFocusStyle)}
-              onBlur={(e) => (e.currentTarget.style.borderColor = "#d1d5db")}
+              onFocus={e => Object.assign(e.currentTarget.style, inputFocusStyle)}
+              onBlur={e => (e.currentTarget.style.borderColor = "#d1d5db")}
             />
           </div>
 
           <button
             type="button"
             style={removeButtonStyle}
-            onMouseOver={(e) =>
-              (e.currentTarget.style.backgroundColor = removeHoverStyle.backgroundColor!)
-            }
-            onMouseOut={(e) =>
-              (e.currentTarget.style.backgroundColor = removeButtonStyle.backgroundColor!)
-            }
+            onMouseOver={e => (e.currentTarget.style.backgroundColor = removeHoverStyle.backgroundColor!)}
+            onMouseOut={e => (e.currentTarget.style.backgroundColor = removeButtonStyle.backgroundColor!)}
             onClick={() => remove(idx)}
           >
             Remove
@@ -180,12 +203,8 @@ export default function EducationForm() {
         <button
           type="button"
           style={secondaryButtonStyle}
-          onMouseOver={(e) =>
-            (e.currentTarget.style.backgroundColor = secondaryHoverStyle.backgroundColor!)
-          }
-          onMouseOut={(e) =>
-            (e.currentTarget.style.backgroundColor = secondaryButtonStyle.backgroundColor!)
-          }
+          onMouseOver={e => (e.currentTarget.style.backgroundColor = secondaryHoverStyle.backgroundColor!)}
+          onMouseOut={e => (e.currentTarget.style.backgroundColor = secondaryButtonStyle.backgroundColor!)}
           onClick={() =>
             append({ id: uuidv4(), institution: "", degree: "", startDate: "", endDate: "" })
           }
@@ -194,16 +213,13 @@ export default function EducationForm() {
         </button>
 
         <button
-          type="submit"
+          type="button"
+          disabled={isSaving}
           style={primaryButtonStyle}
-          onMouseOver={(e) =>
-            (e.currentTarget.style.backgroundColor = primaryHoverStyle.backgroundColor!)
-          }
-          onMouseOut={(e) =>
-            (e.currentTarget.style.backgroundColor = primaryButtonStyle.backgroundColor!)
-          }
+          onMouseOver={e => !isSaving && (e.currentTarget.style.backgroundColor = primaryHoverStyle.backgroundColor!)}
+          onMouseOut={e => (e.currentTarget.style.backgroundColor = primaryButtonStyle.backgroundColor!)}
         >
-          Save Education
+          {isSaving ? "Saving..." : "Save Education"}
         </button>
       </div>
     </form>

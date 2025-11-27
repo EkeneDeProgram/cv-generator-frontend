@@ -3,22 +3,49 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { personalInfoSchema } from "../../utils/validation";
 import { z } from "zod";
 import { useCV } from "../../context/useCV";
-import type { PersonalInfo } from "../../types/cv";
+import { useState, useEffect } from "react";
+import { useSyncFormWithCV } from "../../utils/useSyncFormWithCV";
 
-type FormType = z.infer<typeof personalInfoSchema> & PersonalInfo;
+type FormType = z.infer<typeof personalInfoSchema>;
 
 export default function PersonalInfoForm() {
   const { cv, setCV } = useCV();
+  const [isSaving, setIsSaving] = useState(false);
 
-  const { register, handleSubmit, formState: { errors } } = useForm<FormType>({
+  const {
+    register,
+    watch,
+    reset,
+    formState: { errors, isDirty },
+  } = useForm<FormType>({
     resolver: zodResolver(personalInfoSchema),
     defaultValues: cv.personalInfo,
+    mode: "onChange",
   });
 
-  const onSubmit = (data: FormType) =>
-    setCV(prev => ({ ...prev, personalInfo: data }));
+  // Sync form with CV slice safely
+  useSyncFormWithCV<FormType>(cv.personalInfo, reset);
 
-  // ===== Inline Styles =====
+  const watchedFields = watch();
+
+  // Auto-save safely only if values really changed
+  useEffect(() => {
+    if (!isDirty) return;
+
+    const hasChanged = JSON.stringify(cv.personalInfo) !== JSON.stringify(watchedFields);
+    if (!hasChanged) return;
+
+    setIsSaving(true);
+
+    setCV(prev => ({
+      ...prev,
+      personalInfo: watchedFields,
+    }));
+
+    setIsSaving(false);
+  }, [watchedFields, cv.personalInfo, setCV, isDirty]);
+
+  // Inline styles
   const formWrapperStyle: React.CSSProperties = {
     display: "flex",
     flexDirection: "column",
@@ -63,12 +90,13 @@ export default function PersonalInfoForm() {
     fontWeight: 600,
     borderRadius: "0.75rem",
     border: "none",
-    cursor: "pointer",
+    cursor: isSaving ? "not-allowed" : "pointer",
     backgroundColor: "#4f46e5",
     color: "#ffffff",
     transition: "all 0.2s ease-in-out",
     marginTop: "1rem",
     alignSelf: "flex-start",
+    opacity: isSaving ? 0.6 : 1,
   };
 
   const buttonHoverStyle: React.CSSProperties = {
@@ -76,74 +104,35 @@ export default function PersonalInfoForm() {
   };
 
   return (
-    <form onBlur={handleSubmit(onSubmit)} style={formWrapperStyle}>
+    <form style={formWrapperStyle}>
       <h2 style={{ fontSize: "1.5rem", fontWeight: 700, color: "#1f2937", marginBottom: "1rem" }}>
         Personal Information
       </h2>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-        <label style={labelStyle}>Full Name</label>
-        <input
-          {...register("name")}
-          placeholder="Full name"
-          style={inputStyle}
-          onFocus={(e) => Object.assign(e.currentTarget.style, inputFocusStyle)}
-          onBlur={(e) => (e.currentTarget.style.borderColor = "#d1d5db")}
-        />
-        {errors.name && <span style={errorTextStyle}>{errors.name.message}</span>}
-      </div>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-        <label style={labelStyle}>Email</label>
-        <input
-          {...register("email")}
-          placeholder="Email"
-          style={inputStyle}
-          onFocus={(e) => Object.assign(e.currentTarget.style, inputFocusStyle)}
-          onBlur={(e) => (e.currentTarget.style.borderColor = "#d1d5db")}
-        />
-        {errors.email && <span style={errorTextStyle}>{errors.email.message}</span>}
-      </div>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-        <label style={labelStyle}>Contact Number</label>
-        <input
-          {...register("contact")}
-          placeholder="Contact"
-          style={inputStyle}
-          onFocus={(e) => Object.assign(e.currentTarget.style, inputFocusStyle)}
-          onBlur={(e) => (e.currentTarget.style.borderColor = "#d1d5db")}
-        />
-        {errors.contact && <span style={errorTextStyle}>{errors.contact.message}</span>}
-      </div>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-        <label style={labelStyle}>LinkedIn</label>
-        <input
-          {...register("linkedin")}
-          placeholder="LinkedIn (url)"
-          style={inputStyle}
-          onFocus={(e) => Object.assign(e.currentTarget.style, inputFocusStyle)}
-          onBlur={(e) => (e.currentTarget.style.borderColor = "#d1d5db")}
-        />
-        {errors.linkedin && <span style={errorTextStyle}>{errors.linkedin.message}</span>}
-      </div>
+      {["name", "email", "contact", "linkedin"].map(field => (
+        <div key={field} style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+          <label style={labelStyle}>{field.charAt(0).toUpperCase() + field.slice(1)}</label>
+          <input
+            {...register(field as keyof FormType)}
+            placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
+            style={inputStyle}
+            onFocus={e => Object.assign(e.currentTarget.style, inputFocusStyle)}
+            onBlur={e => (e.currentTarget.style.borderColor = "#d1d5db")}
+          />
+          {errors[field as keyof FormType] && (
+            <span style={errorTextStyle}>{errors[field as keyof FormType]?.message}</span>
+          )}
+        </div>
+      ))}
 
       <button
         type="button"
         style={buttonStyle}
-        onMouseOver={(e) =>
-          (e.currentTarget.style.backgroundColor = buttonHoverStyle.backgroundColor!)
-        }
-        onMouseOut={(e) =>
-          (e.currentTarget.style.backgroundColor = buttonStyle.backgroundColor!)
-        }
-        onClick={handleSubmit(onSubmit)}
+        onMouseOver={e => !isSaving && (e.currentTarget.style.backgroundColor = buttonHoverStyle.backgroundColor!)}
+        onMouseOut={e => (e.currentTarget.style.backgroundColor = buttonStyle.backgroundColor!)}
       >
-        Save Personal Info
+        {isSaving ? "Saving..." : "Save Personal Info"}
       </button>
     </form>
   );
 }
-
-

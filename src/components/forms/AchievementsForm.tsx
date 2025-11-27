@@ -2,8 +2,11 @@ import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCV } from "../../context/useCV";
+import { useState, useEffect, useMemo } from "react";
+import { useDebounce } from "../../hooks/useDebounce";
+import { useSyncFormWithCV } from "../../utils/useSyncFormWithCV";
 
-// ✅ Schema
+// Schema
 const schema = z.object({
   achievements: z.array(
     z.object({
@@ -16,33 +19,61 @@ type FormType = z.infer<typeof schema>;
 
 export default function AchievementsForm() {
   const { cv, setCV } = useCV();
+  const [isSaving, setIsSaving] = useState(false);
 
-  const {
-    control,
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<FormType>({
+  const { control, register, handleSubmit, watch, reset, formState } = useForm<FormType>({
     resolver: zodResolver(schema),
-    defaultValues: {
-      achievements: cv.achievements?.length
-        ? cv.achievements.map((a) => ({ value: a }))
-        : [{ value: "" }],
-    },
+    defaultValues: useMemo(
+      () =>
+        cv.achievements?.length
+          ? { achievements: cv.achievements.map((a) => ({ value: a })) }
+          : { achievements: [{ value: "" }] },
+      [cv.achievements]
+    ),
+    mode: "onChange",
   });
+
+  // Memoized slice to prevent infinite loop
+  const achievementsSlice = useMemo(() => {
+    return cv.achievements?.length
+      ? { achievements: cv.achievements.map((a) => ({ value: a })) }
+      : { achievements: [{ value: "" }] };
+  }, [cv.achievements]);
+
+  // Sync form safely
+  useSyncFormWithCV(achievementsSlice, reset);
 
   const { fields, append, remove } = useFieldArray<FormType>({
     control,
     name: "achievements",
   });
 
-  const onSave = (data: FormType) =>
+  // Watch and debounce for auto-save
+  const watchedAchievements = watch("achievements");
+  const debouncedAchievements = useDebounce(watchedAchievements, 500);
+
+  useEffect(() => {
+    if (!formState.isDirty) return;
+    setIsSaving(true);
+    setCV((prev) => ({
+      ...prev,
+      achievements: debouncedAchievements.map((a) => a.value),
+    }));
+    const timer = setTimeout(() => setIsSaving(false), 200);
+    return () => clearTimeout(timer);
+  }, [debouncedAchievements, setCV, formState.isDirty]);
+
+  // Manual save
+  const onSave = handleSubmit((data) => {
+    setIsSaving(true);
     setCV((prev) => ({
       ...prev,
       achievements: data.achievements.map((a) => a.value),
     }));
+    setIsSaving(false);
+  });
 
-  // Inline styles
+  // Styles
   const formWrapperStyle: React.CSSProperties = {
     backgroundColor: "#ffffff",
     padding: "2rem",
@@ -90,6 +121,8 @@ export default function AchievementsForm() {
     ...buttonStyle,
     backgroundColor: "#4f46e5",
     color: "#ffffff",
+    opacity: isSaving ? 0.6 : 1,
+    cursor: isSaving ? "not-allowed" : "pointer",
   };
 
   const secondaryButtonStyle: React.CSSProperties = {
@@ -109,10 +142,8 @@ export default function AchievementsForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSave)} style={formWrapperStyle}>
-      <h2 style={{ fontSize: "1.5rem", fontWeight: 700, color: "#1f2937" }}>
-        Achievements
-      </h2>
+    <form onSubmit={onSave} style={formWrapperStyle}>
+      <h2 style={{ fontSize: "1.5rem", fontWeight: 700, color: "#1f2937" }}>Achievements</h2>
 
       {fields.map((f, idx) => (
         <div key={f.id} style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
@@ -127,19 +158,15 @@ export default function AchievementsForm() {
             <button
               type="button"
               style={removeButtonStyle}
-              onMouseOver={(e) =>
-                (e.currentTarget.style.backgroundColor = removeButtonHoverStyle.backgroundColor!)
-              }
-              onMouseOut={(e) =>
-                (e.currentTarget.style.backgroundColor = removeButtonStyle.backgroundColor!)
-              }
+              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = removeButtonHoverStyle.backgroundColor!)}
+              onMouseOut={(e) => (e.currentTarget.style.backgroundColor = removeButtonStyle.backgroundColor!)}
               onClick={() => remove(idx)}
             >
               Remove
             </button>
           </div>
-          {errors.achievements?.[idx]?.value && (
-            <span style={errorTextStyle}>{errors.achievements[idx]?.value?.message}</span>
+          {formState.errors.achievements?.[idx]?.value && (
+            <span style={errorTextStyle}>{formState.errors.achievements[idx]?.value?.message}</span>
           )}
         </div>
       ))}
@@ -157,11 +184,12 @@ export default function AchievementsForm() {
 
         <button
           type="submit"
+          disabled={isSaving}
           style={primaryButtonStyle}
-          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#4338ca")}
+          onMouseOver={(e) => !isSaving && (e.currentTarget.style.backgroundColor = "#4338ca")}
           onMouseOut={(e) => (e.currentTarget.style.backgroundColor = primaryButtonStyle.backgroundColor!)}
         >
-          Save Achievements
+          {isSaving ? "Saving..." : "Save Achievements"}
         </button>
       </div>
     </form>

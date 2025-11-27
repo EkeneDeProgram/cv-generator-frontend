@@ -2,8 +2,11 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useCV } from "../../context/useCV";
+import { useDebounce } from "../../hooks/useDebounce";
+import { useEffect, useState, useMemo } from "react";
+import { useSyncFormWithCV } from "../../utils/useSyncFormWithCV";
 
-// ✅ Schema
+// Schema
 const skillSchema = z.object({
   category: z.string().min(1, "Category is required"),
   items: z.array(z.string().min(1, "At least one skill is required")),
@@ -17,34 +20,51 @@ type FormType = z.infer<typeof formSchema>;
 
 export default function SkillsForm() {
   const { cv, setCV } = useCV();
+  const [isSaving, setIsSaving] = useState(false);
 
-  const { control, register, handleSubmit, watch, formState: { errors } } = useForm<FormType>({
+  // Memoize the CV slice to prevent infinite reset loops
+  const skillsSlice = useMemo(() => {
+    return cv.skills?.length
+      ? { skills: cv.skills }
+      : { skills: [{ category: "", items: [""] }] };
+  }, [cv.skills]);
+
+  const { control, register, watch, reset } = useForm<FormType>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      skills: cv.skills?.length ? cv.skills : [{ category: "", items: [""] }],
-    },
+    defaultValues: skillsSlice,
+    mode: "onChange",
   });
 
-  const { fields: skillFields, append: appendSkill, remove: removeSkill } = useFieldArray({
-    control,
-    name: "skills",
-  });
+  // Sync form with CV slice safely
+  useSyncFormWithCV<FormType>(skillsSlice, reset);
+
+  const { fields: skillFields, append: appendSkill, remove: removeSkill } =
+    useFieldArray({
+      control,
+      name: "skills",
+    });
 
   const watchSkills = watch("skills");
+  const debouncedSkills = useDebounce(watchSkills, 500); // 500ms debounce
 
-  const onSave = (data: FormType) => setCV((prev) => ({ ...prev, skills: data.skills }));
+  // Auto-save debounced skills
+  useEffect(() => {
+    setIsSaving(true);
+    setCV((prev) => ({ ...prev, skills: debouncedSkills }));
+    const timer = setTimeout(() => setIsSaving(false), 200); // simulate save delay
+    return () => clearTimeout(timer);
+  }, [debouncedSkills, setCV]);
 
-  // ✅ Inline Styles
+  // Styles
   const formWrapperStyle: React.CSSProperties = {
-    backgroundColor: "#ffffff",
-    padding: "2rem",
-    borderRadius: "1rem",
-    boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
     display: "flex",
     flexDirection: "column",
-    gap: "1.5rem",
+    gap: "1rem",
+    padding: "2rem",
     maxWidth: "700px",
     margin: "0 auto",
+    backgroundColor: "#f9fafb",
+    borderRadius: "1rem",
     fontFamily: "Arial, sans-serif",
   };
 
@@ -54,12 +74,12 @@ export default function SkillsForm() {
     borderRadius: "0.75rem",
     display: "flex",
     flexDirection: "column",
-    gap: "0.75rem",
+    gap: "0.5rem",
+    backgroundColor: "#ffffff",
   };
 
   const inputStyle: React.CSSProperties = {
-    flex: 1,
-    padding: "0.75rem 1rem",
+    padding: "0.5rem 1rem",
     borderRadius: "0.5rem",
     border: "1px solid #d1d5db",
     fontSize: "1rem",
@@ -71,71 +91,48 @@ export default function SkillsForm() {
     boxShadow: "0 0 0 2px rgba(79,70,229,0.2)",
   };
 
-  const errorTextStyle: React.CSSProperties = {
-    color: "#ef4444",
-    fontSize: "0.875rem",
-    marginTop: "0.25rem",
-  };
-
-  const buttonStyle: React.CSSProperties = {
-    padding: "0.65rem 1.25rem",
-    fontSize: "0.95rem",
+  const buttonBase: React.CSSProperties = {
+    padding: "0.5rem 1rem",
+    fontSize: "0.9rem",
     fontWeight: 600,
-    borderRadius: "0.75rem",
+    borderRadius: "0.5rem",
     cursor: "pointer",
     border: "none",
     transition: "all 0.2s ease-in-out",
   };
 
   const primaryButtonStyle: React.CSSProperties = {
-    ...buttonStyle,
+    ...buttonBase,
     backgroundColor: "#4f46e5",
-    color: "#ffffff",
-  };
-
-  const primaryHoverStyle: React.CSSProperties = {
-    backgroundColor: "#4338ca",
+    color: "#fff",
   };
 
   const secondaryButtonStyle: React.CSSProperties = {
-    ...buttonStyle,
+    ...buttonBase,
     backgroundColor: "#e0e7ff",
     color: "#4f46e5",
   };
 
-  const secondaryHoverStyle: React.CSSProperties = {
-    backgroundColor: "#c7d2fe",
-  };
-
   const removeButtonStyle: React.CSSProperties = {
-    ...buttonStyle,
+    ...buttonBase,
     backgroundColor: "#fee2e2",
     color: "#b91c1c",
   };
 
-  const removeHoverStyle: React.CSSProperties = {
-    backgroundColor: "#fca5a5",
-  };
-
   return (
-    <form onSubmit={handleSubmit(onSave)} style={formWrapperStyle}>
-      <h2 style={{ fontSize: "1.5rem", fontWeight: 700, color: "#1f2937" }}>Skills</h2>
+    <form style={formWrapperStyle}>
+      <h2 style={{ fontSize: "1.5rem", fontWeight: 700 }}>Skills</h2>
 
       {skillFields.map((skill, skillIdx) => (
         <div key={skill.id} style={cardStyle}>
-          {/* Category Input */}
           <input
             {...register(`skills.${skillIdx}.category` as const)}
-            placeholder="Category (e.g. Programming)"
+            placeholder="Category"
             style={inputStyle}
             onFocus={(e) => Object.assign(e.currentTarget.style, inputFocusStyle)}
             onBlur={(e) => (e.currentTarget.style.borderColor = "#d1d5db")}
           />
-          {errors.skills?.[skillIdx]?.category && (
-            <p style={errorTextStyle}>{errors.skills[skillIdx]?.category?.message}</p>
-          )}
 
-          {/* Skill Items */}
           {watchSkills[skillIdx].items.map((_, itemIdx) => (
             <div key={itemIdx} style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
               <input
@@ -148,8 +145,6 @@ export default function SkillsForm() {
               <button
                 type="button"
                 style={removeButtonStyle}
-                onMouseOver={(e) => (e.currentTarget.style.backgroundColor = removeHoverStyle.backgroundColor!)}
-                onMouseOut={(e) => (e.currentTarget.style.backgroundColor = removeButtonStyle.backgroundColor!)}
                 onClick={() => {
                   const updatedItems = [...watchSkills[skillIdx].items];
                   updatedItems.splice(itemIdx, 1);
@@ -165,13 +160,10 @@ export default function SkillsForm() {
             </div>
           ))}
 
-          {/* Add Skill / Remove Category Buttons */}
-          <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginTop: "0.5rem" }}>
+          <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
             <button
               type="button"
               style={secondaryButtonStyle}
-              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = secondaryHoverStyle.backgroundColor!)}
-              onMouseOut={(e) => (e.currentTarget.style.backgroundColor = secondaryButtonStyle.backgroundColor!)}
               onClick={() => {
                 const updatedItems = [...watchSkills[skillIdx].items, ""];
                 setCV((prev) => {
@@ -183,12 +175,9 @@ export default function SkillsForm() {
             >
               Add Skill
             </button>
-
             <button
               type="button"
               style={removeButtonStyle}
-              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = removeHoverStyle.backgroundColor!)}
-              onMouseOut={(e) => (e.currentTarget.style.backgroundColor = removeButtonStyle.backgroundColor!)}
               onClick={() => removeSkill(skillIdx)}
             >
               Remove Category
@@ -197,26 +186,26 @@ export default function SkillsForm() {
         </div>
       ))}
 
-      {/* Add Skill Category / Save */}
-      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginTop: "1rem" }}>
+      {/* Add Skill Category / Save Button */}
+      <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem", flexWrap: "wrap" }}>
         <button
           type="button"
           style={secondaryButtonStyle}
-          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = secondaryHoverStyle.backgroundColor!)}
-          onMouseOut={(e) => (e.currentTarget.style.backgroundColor = secondaryButtonStyle.backgroundColor!)}
           onClick={() => appendSkill({ category: "", items: [""] })}
         >
           Add Skill Category
         </button>
 
-        <button
-          type="submit"
-          style={primaryButtonStyle}
-          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = primaryHoverStyle.backgroundColor!)}
-          onMouseOut={(e) => (e.currentTarget.style.backgroundColor = primaryButtonStyle.backgroundColor!)}
-        >
+        {/* FIXED: Save button no longer flickers */}
+        <button type="button" style={primaryButtonStyle}>
           Save Skills
         </button>
+
+        {isSaving && (
+          <span style={{ fontSize: "0.85rem", color: "#6b7280" }}>
+            Saving...
+          </span>
+        )}
       </div>
     </form>
   );

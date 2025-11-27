@@ -1,17 +1,50 @@
 import { useCV } from "../../context/useCV";
+import { useDebounce } from "../../hooks/useDebounce";
+import { useEffect, useState } from "react";
 
 export default function StyleSettings() {
   const { cv, setCV } = useCV();
+  const [isSaving, setIsSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
 
-  const handleChange = (field: string, value: string) => {
-    setCV((prev) => ({ ...prev, [field]: value }));
+  const getSafeColor = (color: string | undefined) => {
+    const hexPattern = /^#[0-9A-Fa-f]{6}$/;
+    return color && hexPattern.test(color) ? color : "#008080";
   };
 
-  const handleSave = () => {
-    alert("Style settings saved successfully!");
+  const debouncedCV = useDebounce(cv, 500);
+
+  // Auto save effect with ✔ checkmark
+  useEffect(() => {
+    setIsSaving(true);
+    setSaved(false);
+
+    const timer = setTimeout(() => {
+      setIsSaving(false);
+      setSaved(true);
+
+      const doneTimer = setTimeout(() => setSaved(false), 1200);
+      return () => clearTimeout(doneTimer);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [debouncedCV]);
+
+  // Map frontend template names to backend template values
+  const templateMap: Record<string, "modern" | "card" | "twoColumn"> = {
+    Moderno: "modern",
+    Cardio: "card",
+    Bifrost: "twoColumn",
   };
 
-  // Inline styles
+  const handleChange = (field: keyof typeof cv, value: string) => {
+    if (field === "template") {
+      setCV((prev) => ({ ...prev, template: templateMap[value] }));
+    } else {
+      setCV((prev) => ({ ...prev, [field]: value }));
+    }
+  };
+
   const containerStyle: React.CSSProperties = {
     backgroundColor: "#ffffff",
     padding: "2rem",
@@ -29,7 +62,6 @@ export default function StyleSettings() {
     fontSize: "1.5rem",
     fontWeight: 700,
     color: "#1f2937",
-    marginBottom: "1rem",
   };
 
   const labelStyle: React.CSSProperties = {
@@ -63,23 +95,26 @@ export default function StyleSettings() {
     fontSize: "1rem",
     fontWeight: 600,
     borderRadius: "0.75rem",
-    backgroundColor: "#4f46e5",
+    backgroundColor: saved ? "#10b981" : "#4f46e5",
     color: "#ffffff",
-    cursor: "pointer",
+    cursor: isSaving ? "not-allowed" : "pointer",
     border: "none",
-    transition: "all 0.2s ease-in-out",
+    transition: "all 0.25s ease-in-out",
     alignSelf: "flex-start",
+    opacity: isSaving ? 0.6 : 1,
   };
 
-  const buttonHoverStyle: React.CSSProperties = {
-    backgroundColor: "#4338ca",
+  const templateTaglines: Record<string, string> = {
+    Moderno: "Sleek, minimalist, and contemporary layout for a clean professional look.",
+    Cardio: "Organized card-based layout for clear section separation and easy reading.",
+    Bifrost: "Two-column layout for a structured, information-rich CV with elegant flow.",
   };
 
   return (
     <div style={containerStyle}>
       <h2 style={titleStyle}>Style Settings</h2>
 
-      {/* Template Selector */}
+      {/* Template */}
       <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
         <label style={labelStyle}>Template</label>
         <select
@@ -89,12 +124,14 @@ export default function StyleSettings() {
           onFocus={(e) => (e.currentTarget.style.borderColor = "#4f46e5")}
           onBlur={(e) => (e.currentTarget.style.borderColor = "#d1d5db")}
         >
-          <option value="classic">Classic</option>
-          <option value="modern">Modern</option>
-          <option value="creative">Creative</option>
-          <option value="card-based">Card-Based</option>
-          <option value="two-column">Two Column</option>
+          <option value="Moderno">Moderno</option>
+          <option value="Cardio">Cardio</option>
+          <option value="Bifrost">Bifrost</option>
         </select>
+        {/* Tagline for selected template */}
+        <span style={{ fontSize: "0.9rem", color: "#6b7280", marginTop: "0.25rem" }}>
+          {templateTaglines[cv.template]}
+        </span>
       </div>
 
       {/* Color Scheme */}
@@ -102,7 +139,7 @@ export default function StyleSettings() {
         <label style={labelStyle}>Color Scheme</label>
         <input
           type="color"
-          value={cv.colorScheme}
+          value={getSafeColor(cv.colorScheme)}
           onChange={(e) => handleChange("colorScheme", e.target.value)}
           style={colorInputStyle}
         />
@@ -126,13 +163,8 @@ export default function StyleSettings() {
       </div>
 
       {/* Save Button */}
-      <button
-        onClick={handleSave}
-        style={buttonStyle}
-        onMouseOver={(e) => (e.currentTarget.style.backgroundColor = buttonHoverStyle.backgroundColor!)}
-        onMouseOut={(e) => (e.currentTarget.style.backgroundColor = buttonStyle.backgroundColor!)}
-      >
-        Save Settings
+      <button style={buttonStyle} disabled={isSaving}>
+        {isSaving ? "Saving..." : saved ? "✔ Saved" : "Save Settings"}
       </button>
     </div>
   );

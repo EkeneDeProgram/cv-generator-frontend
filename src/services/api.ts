@@ -1,23 +1,21 @@
 import axios from "axios";
 import type { CVData } from "../types/cv";
 
-// Create a reusable Axios client with a base API URL
-// Uses env variable (VITE_API_BASE) or falls back to localhost
 const client = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE || "http://localhost:5000/api"
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api/cv",
 });
 
-// Send CV data to backend for preview (returns rendered HTML)
-export function previewCV(data: CVData) {
-  return client.post("/cv/preview", data, { responseType: "text" });
+// Preview CV
+export function previewCV(cv: CVData) {
+  return client.post("/preview", cv, { responseType: "text" });
 }
 
-// Send CV data to backend and get a PDF file back
-export function downloadPDF(data: CVData) {
-  return client.post("/cv/download/pdf", data, { responseType: "blob" });
+// Download PDF
+export function downloadPDF(cv: CVData) {
+  return client.post("/download/pdf", cv, { responseType: "blob" });
 }
 
-// Send CV data to backend and get a DOCX file back
-export function downloadDOCX(data: CVData) {
-  return client.post("/cv/download/docx", data, { responseType: "blob" });
+// Download DOCX
+export function downloadDOCX(cv: CVData) {
+  return client.post("/download/docx", cv, { responseType: "blob" });
 }

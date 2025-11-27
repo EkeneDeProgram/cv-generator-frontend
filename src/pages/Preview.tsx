@@ -1,11 +1,58 @@
 import { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { FiHome, FiArrowLeft, FiDownload, FiFileText } from "react-icons/fi";
+
 import { useCV } from "../context/useCV";
 import { previewCV, downloadPDF, downloadDOCX } from "../services/api";
 import { useDebounce } from "../hooks/useDebounce";
+import type { CVData } from "../types/cv";
 
+
+// Utility Function
+function cvHasRealContent(cv: CVData | string | string[] | object): boolean {
+  if (!cv) return false;
+
+  // Check string
+  if (typeof cv === "string") return cv.trim().length > 0;
+
+  // Check array
+  if (Array.isArray(cv)) return cv.some((item) => cvHasRealContent(item));
+
+  // Check object
+  if (typeof cv === "object") {
+    const obj = cv as Record<string, unknown>;
+    const keysToCheck = Object.keys(obj).filter(
+      (key) =>
+        key !== "template" &&
+        key !== "colorScheme" &&
+        key !== "fontStyle" &&
+        key !== "_docxParts"
+    );
+
+    return keysToCheck.some((key) => {
+      const value = obj[key];
+      // Only pass values that are string, array, or object
+      if (
+        typeof value === "string" ||
+        Array.isArray(value) ||
+        (typeof value === "object" && value !== null)
+      ) {
+        return cvHasRealContent(value);
+      }
+      return false;
+    });
+  }
+
+  return false;
+}
+
+
+// Preview Component
 export default function Preview() {
+  const navigate = useNavigate();
   const { cv } = useCV();
   const debouncedCV = useDebounce(cv, 500);
+
   const [html, setHtml] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string>("");
@@ -13,11 +60,23 @@ export default function Preview() {
 
   const generatePreview = useCallback(async () => {
     if (!debouncedCV) return;
+
+    const hasData = cvHasRealContent(debouncedCV);
+
+    if (!hasData) {
+      setMessage("Your CV is empty. Add content to generate a preview.");
+      setMessageType("info");
+      setHtml("");
+      return;
+    }
+
     setLoading(true);
     try {
-      const res = await previewCV(debouncedCV);
-      setHtml(res.data || res);
-      setMessage("Preview updated successfully ✅");
+      const res = (await previewCV(debouncedCV)) as { data?: string } | string;
+      const htmlContent = typeof res === "string" ? res : res.data ?? "";
+      setHtml(htmlContent);
+
+      setMessage("Preview updated successfully");
       setMessageType("success");
     } catch {
       setMessage("Preview generation failed. Please try again.");
@@ -31,11 +90,16 @@ export default function Preview() {
     generatePreview();
   }, [generatePreview]);
 
+  useEffect(() => {
+    if (!cv || Object.keys(cv).length === 0) return;
+    generatePreview();
+  }, [cv, generatePreview]);
+
   async function handleDownload(type: "pdf" | "docx") {
     if (!cv) return;
+
     try {
-      const res =
-        type === "pdf" ? await downloadPDF(cv) : await downloadDOCX(cv);
+      const res = type === "pdf" ? await downloadPDF(cv) : await downloadDOCX(cv);
       const blob = new Blob([res.data || res], {
         type:
           res.headers?.["content-type"] ||
@@ -43,6 +107,7 @@ export default function Preview() {
             ? "application/pdf"
             : "application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
       });
+
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -60,7 +125,7 @@ export default function Preview() {
     }
   }
 
-  // ==== Inline Styles ====
+  // Styles
   const containerStyle: React.CSSProperties = {
     display: "flex",
     flexDirection: "column",
@@ -69,14 +134,18 @@ export default function Preview() {
     backgroundColor: "#f9fafb",
     borderRadius: "1rem",
     fontFamily: "'Inter', Arial, sans-serif",
+    width: "95%",
     maxWidth: "1000px",
     margin: "0 auto",
+    boxSizing: "border-box",
   };
 
   const headerStyle: React.CSSProperties = {
     display: "flex",
+    flexDirection: "column",
+    gap: "1rem",
     justifyContent: "space-between",
-    alignItems: "center",
+    alignItems: "stretch",
     borderBottom: "1px solid #e5e7eb",
     paddingBottom: "1rem",
   };
@@ -85,11 +154,14 @@ export default function Preview() {
     fontSize: "1.75rem",
     fontWeight: 700,
     color: "#111827",
+    textAlign: "center",
   };
 
   const buttonGroupStyle: React.CSSProperties = {
     display: "flex",
-    gap: "0.75rem",
+    flexWrap: "wrap",
+    gap: "0.5rem",
+    justifyContent: "center",
   };
 
   const buttonBase: React.CSSProperties = {
@@ -100,6 +172,12 @@ export default function Preview() {
     border: "none",
     cursor: "pointer",
     transition: "all 0.2s ease-in-out",
+    display: "flex",
+    alignItems: "center",
+    gap: "0.5rem",
+    flex: "1 1 auto",
+    justifyContent: "center",
+    minWidth: "140px",
   };
 
   const primaryButton: React.CSSProperties = {
@@ -107,7 +185,6 @@ export default function Preview() {
     backgroundColor: "#4f46e5",
     color: "#fff",
   };
-
   const primaryHover = "#4338ca";
 
   const outlineButton: React.CSSProperties = {
@@ -115,7 +192,6 @@ export default function Preview() {
     backgroundColor: "#e0e7ff",
     color: "#3730a3",
   };
-
   const outlineHover = "#c7d2fe";
 
   const messageStyle: React.CSSProperties = {
@@ -141,6 +217,7 @@ export default function Preview() {
         : messageType === "error"
         ? "1px solid #fca5a5"
         : "1px solid #bae6fd",
+    textAlign: "center",
   };
 
   const cardStyle: React.CSSProperties = {
@@ -149,6 +226,7 @@ export default function Preview() {
     border: "1px solid #e5e7eb",
     boxShadow: "0 6px 18px rgba(0,0,0,0.05)",
     overflow: "hidden",
+    width: "100%",
   };
 
   const cardHeaderStyle: React.CSSProperties = {
@@ -161,9 +239,10 @@ export default function Preview() {
   };
 
   const cardContentStyle: React.CSSProperties = {
-    minHeight: "600px",
-    padding: "1.5rem",
+    minHeight: "400px",
+    padding: "1rem",
     backgroundColor: "#ffffff",
+    overflowX: "auto",
   };
 
   const loadingTextStyle: React.CSSProperties = {
@@ -173,7 +252,7 @@ export default function Preview() {
     fontSize: "1rem",
   };
 
-  // ==== JSX ====
+
   return (
     <div style={containerStyle}>
       {/* Header */}
@@ -181,28 +260,45 @@ export default function Preview() {
         <h1 style={titleStyle}>CV Preview</h1>
         <div style={buttonGroupStyle}>
           <button
+            style={outlineButton}
+            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = outlineHover)}
+            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = outlineButton.backgroundColor!)}
+            onClick={() => navigate("/")}
+          >
+            <FiHome /> Home
+          </button>
+
+          <button
+            style={outlineButton}
+            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = outlineHover)}
+            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = outlineButton.backgroundColor!)}
+            onClick={() => navigate("/builder", { state: { resetStep: true } })}
+          >
+            <FiArrowLeft /> Back to Builder
+          </button>
+
+          <button
             style={primaryButton}
             onMouseOver={(e) => (e.currentTarget.style.backgroundColor = primaryHover)}
             onMouseOut={(e) => (e.currentTarget.style.backgroundColor = primaryButton.backgroundColor!)}
             onClick={() => handleDownload("pdf")}
           >
-            ⬇️ Download PDF
+            <FiDownload /> Download PDF
           </button>
+
           <button
             style={outlineButton}
             onMouseOver={(e) => (e.currentTarget.style.backgroundColor = outlineHover)}
             onMouseOut={(e) => (e.currentTarget.style.backgroundColor = outlineButton.backgroundColor!)}
             onClick={() => handleDownload("docx")}
           >
-            📝 Download DOCX
+            <FiFileText /> Download DOCX
           </button>
         </div>
       </div>
 
-      {/* Notification */}
       {message && <div style={messageStyle}>{message}</div>}
 
-      {/* Preview Card */}
       <div style={cardStyle}>
         <div style={cardHeaderStyle}>Live CV Preview</div>
         <div style={cardContentStyle}>

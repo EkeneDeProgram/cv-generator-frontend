@@ -2,6 +2,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useCV } from "../../context/useCV";
+import { useDebounce } from "../../hooks/useDebounce";
+import { useEffect, useState, useMemo } from "react";
+import { useSyncFormWithCV } from "../../utils/useSyncFormWithCV";
 
 const schema = z.object({
   summary: z.string().min(10, "Summary should be at least 10 characters long"),
@@ -11,20 +14,38 @@ type FormType = z.infer<typeof schema>;
 
 export default function SummaryForm() {
   const { cv, setCV } = useCV();
+  const [isSaving, setIsSaving] = useState(false);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<FormType>({
+  const { register, watch, reset } = useForm<FormType>({
     resolver: zodResolver(schema),
     defaultValues: { summary: cv.summary || "" },
+    mode: "onChange",
   });
 
-  const onSubmit = (data: FormType) =>
-    setCV((prev) => ({ ...prev, summary: data.summary }));
+  // Memoize the slice to avoid infinite loop
+  const summarySlice = useMemo(() => ({ summary: cv.summary || "" }), [cv.summary]);
 
-  // Styles
+  // Sync form safely
+  useSyncFormWithCV(summarySlice, reset);
+
+  const watchedSummary = watch("summary");
+  const debouncedSummary = useDebounce(watchedSummary, 500);
+
+  // Auto-save whenever debounced summary changes
+  useEffect(() => {
+    if (debouncedSummary === cv.summary) return; // ❗ Prevent saving same value
+
+    setIsSaving(true);
+
+    const saveTimer = setTimeout(() => {
+      setCV((prev) => ({ ...prev, summary: debouncedSummary }));
+      setIsSaving(false);
+    }, 200);
+
+    return () => clearTimeout(saveTimer);
+  }, [debouncedSummary, cv.summary, setCV]);
+
+  // Styles (same as yours)
   const formWrapperStyle: React.CSSProperties = {
     display: "flex",
     flexDirection: "column",
@@ -59,11 +80,6 @@ export default function SummaryForm() {
     boxShadow: "inset 0 2px 4px rgba(0,0,0,0.05)",
   };
 
-  const errorTextStyle: React.CSSProperties = {
-    color: "#ef4444",
-    fontSize: "0.875rem",
-  };
-
   const buttonStyle: React.CSSProperties = {
     padding: "0.75rem 1.5rem",
     fontSize: "1rem",
@@ -71,22 +87,25 @@ export default function SummaryForm() {
     borderRadius: "0.75rem",
     backgroundColor: "#4f46e5",
     color: "#ffffff",
-    cursor: "pointer",
+    cursor: isSaving ? "not-allowed" : "pointer",
     border: "none",
     transition: "all 0.2s ease-in-out",
+    opacity: isSaving ? 0.6 : 1,
   };
 
-  const buttonHoverStyle: React.CSSProperties = {
-    backgroundColor: "#4338ca",
-  };
+  const buttonHoverStyle: React.CSSProperties = { backgroundColor: "#4338ca" };
 
   return (
     <div style={formWrapperStyle}>
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        style={formStyle}
-      >
-        <h2 style={{ fontSize: "1.5rem", fontWeight: 700, marginBottom: "1rem", color: "#1f2937" }}>
+      <form style={formStyle}>
+        <h2
+          style={{
+            fontSize: "1.5rem",
+            fontWeight: 700,
+            marginBottom: "1rem",
+            color: "#1f2937",
+          }}
+        >
           Professional Summary
         </h2>
         <textarea
@@ -97,16 +116,17 @@ export default function SummaryForm() {
           onFocus={(e) => (e.currentTarget.style.borderColor = "#4f46e5")}
           onBlur={(e) => (e.currentTarget.style.borderColor = "#d1d5db")}
         />
-        {errors.summary && (
-          <p style={errorTextStyle}>{errors.summary.message}</p>
-        )}
+
         <button
-          type="submit"
+          type="button"
           style={buttonStyle}
-          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = buttonHoverStyle.backgroundColor!)}
-          onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#4f46e5")}
+          disabled={isSaving}
+          onMouseOver={(e) =>
+            !isSaving && (e.currentTarget.style.backgroundColor = buttonHoverStyle.backgroundColor!)
+          }
+          onMouseOut={(e) => !isSaving && (e.currentTarget.style.backgroundColor = "#4f46e5")}
         >
-          Save Summary
+          {isSaving ? "Saving..." : "Save Summary"}
         </button>
       </form>
     </div>

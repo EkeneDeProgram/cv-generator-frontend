@@ -9,6 +9,7 @@ export const Button: React.FC<ButtonProps> = ({
   variant = "primary",
   className,
   children,
+  type = "button",
   ...props
 }) => {
   const base = "px-4 py-2 rounded-lg font-medium focus:outline-none transition";
@@ -20,7 +21,11 @@ export const Button: React.FC<ButtonProps> = ({
   };
 
   return (
-    <button className={clsx(base, styles[variant], className)} {...props}>
+    <button
+      type={type}
+      className={clsx(base, styles[variant], className)}
+      {...props}
+    >
       {children}
     </button>
   );

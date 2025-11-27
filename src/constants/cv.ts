@@ -19,7 +19,7 @@ export const defaultCV: CVData = {
   projects: [],
   skills: [],
   achievements: [],
-  template: "classic",
+  template: "modern",
   colorScheme: "blue",
   fontStyle: "sans-serif",
   _docxParts: {

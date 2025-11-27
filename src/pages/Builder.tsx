@@ -1,183 +1,8 @@
-// import { useState, useEffect } from "react";
-// import { Link } from "react-router-dom";
-// import { useCV } from "../context/useCV";
-// import type { CVData } from "../types/cv";
-
-// import PersonalInfoForm from "../components/forms/PersonalInfoForm";
-// import WorkExperienceForm from "../components/forms/WorkExperienceForm";
-// import EducationForm from "../components/forms/EducationForm";
-// import ProjectsForm from "../components/forms/ProjectsForm";
-// import SkillsForm from "../components/forms/SkillsForm";
-// import AchievementsForm from "../components/forms/AchievementsForm";
-// import SummaryForm from "../components/forms/SummaryForm";
-// import StyleSettings from "../components/forms/StyleSettings";
-
-// import { Button } from "../components/ui/Button";
-// import { useLocalStorage } from "../hooks/useLocalStorage";
-
-// export default function Builder() {
-//   const { loadExample, reset, cv, setCV } = useCV();
-
-//   const [storedIndex, setStoredIndex] = useLocalStorage<number>("builderStep", 0);
-//   const [index, setIndex] = useState(storedIndex);
-
-//   useEffect(() => {
-//     setStoredIndex(index);
-//   }, [index, setStoredIndex]);
-
-//   const [savedCV, setSavedCV] = useLocalStorage<CVData>("builderCV", cv);
-
-//   useEffect(() => {
-//     setSavedCV(cv);
-//   }, [cv, setSavedCV]);
-
-//   useEffect(() => {
-//     if (savedCV && Object.keys(savedCV).length > 0) {
-//       setCV(savedCV);
-//     }
-//   }, [savedCV, setCV]);
-
-//   const steps = [
-//     { id: "personal", title: "Personal Info", component: <PersonalInfoForm /> },
-//     { id: "work", title: "Work Experience", component: <WorkExperienceForm /> },
-//     { id: "education", title: "Education", component: <EducationForm /> },
-//     { id: "projects", title: "Projects", component: <ProjectsForm /> },
-//     { id: "skills", title: "Skills", component: <SkillsForm /> },
-//     { id: "achievements", title: "Achievements", component: <AchievementsForm /> },
-//     { id: "summary", title: "Summary", component: <SummaryForm /> },
-//     { id: "style", title: "Style Settings", component: <StyleSettings /> },
-//   ];
-
-//   // Inline styles
-//   const containerStyle: React.CSSProperties = {
-//     display: "flex",
-//     flexDirection: "column",
-//     gap: "1.5rem",
-//     padding: "2rem",
-//     maxWidth: "800px",
-//     margin: "0 auto",
-//   };
-
-//   const headerStyle: React.CSSProperties = {
-//     display: "flex",
-//     justifyContent: "space-between",
-//     alignItems: "center",
-//   };
-
-//   const buttonGroupStyle: React.CSSProperties = {
-//     display: "flex",
-//     gap: "0.5rem",
-//   };
-
-//   const stepContainerStyle: React.CSSProperties = {
-//     marginTop: "1rem",
-//   };
-
-//   const navContainerStyle: React.CSSProperties = {
-//     display: "flex",
-//     justifyContent: "space-between",
-//     alignItems: "center",
-//     marginTop: "1.5rem",
-//   };
-
-//   const navButtonGroupStyle: React.CSSProperties = {
-//     display: "flex",
-//     gap: "0.5rem",
-//     alignItems: "center",
-//   };
-
-//   const buttonStyle: React.CSSProperties = {
-//     borderRadius: "1rem",       // Smooth rounded edges
-//     backgroundColor: "#3b82f6", // Blue background
-//     color: "#ffffff",
-//     padding: "0.5rem 1rem",
-//     fontWeight: 600,
-//     cursor: "pointer",
-//     border: "none",
-//     transition: "all 0.2s ease-in-out",
-//   };
-
-//   const buttonHoverStyle: React.CSSProperties = {
-//     backgroundColor: "#2563eb", // Slightly darker blue on hover
-//   };
-
-//   return (
-//     <div style={containerStyle}>
-//       {/* Header */}
-//       <div style={headerStyle}>
-//         <div style={buttonGroupStyle}>
-//           <Button
-//             variant="secondary"
-//             onClick={loadExample}
-//             style={buttonStyle}
-//             onMouseOver={(e) => (e.currentTarget.style.backgroundColor = buttonHoverStyle.backgroundColor!)}
-//             onMouseOut={(e) => (e.currentTarget.style.backgroundColor = buttonStyle.backgroundColor!)}
-//           >
-//             Load Example
-//           </Button>
-//           <Button
-//             variant="outline"
-//             onClick={reset}
-//             style={buttonStyle}
-//             onMouseOver={(e) => (e.currentTarget.style.backgroundColor = buttonHoverStyle.backgroundColor!)}
-//             onMouseOut={(e) => (e.currentTarget.style.backgroundColor = buttonStyle.backgroundColor!)}
-//           >
-//             Reset
-//           </Button>
-//         </div>
-//       </div>
-
-//       {/* Current step */}
-//       <div style={stepContainerStyle}>{steps[index].component}</div>
-
-//       {/* Navigation */}
-//       <div style={navContainerStyle}>
-//         <Button
-//           variant="outline"
-//           disabled={index === 0}
-//           onClick={() => setIndex((i) => i - 1)}
-//           style={buttonStyle}
-//           onMouseOver={(e) => (e.currentTarget.style.backgroundColor = buttonHoverStyle.backgroundColor!)}
-//           onMouseOut={(e) => (e.currentTarget.style.backgroundColor = buttonStyle.backgroundColor!)}
-//         >
-//           Back
-//         </Button>
-
-//         <div style={navButtonGroupStyle}>
-//           {index < steps.length - 1 ? (
-//             <Button
-//               variant="primary"
-//               onClick={() => setIndex((i) => Math.min(i + 1, steps.length - 1))}
-//               style={buttonStyle}
-//               onMouseOver={(e) => (e.currentTarget.style.backgroundColor = buttonHoverStyle.backgroundColor!)}
-//               onMouseOut={(e) => (e.currentTarget.style.backgroundColor = buttonStyle.backgroundColor!)}
-//             >
-//               Next
-//             </Button>
-//           ) : (
-//             <Link to="/preview" style={{ textDecoration: "none" }}>
-//               <Button
-//                 variant="primary"
-//                 style={buttonStyle}
-//                 onMouseOver={(e) => (e.currentTarget.style.backgroundColor = buttonHoverStyle.backgroundColor!)}
-//                 onMouseOut={(e) => (e.currentTarget.style.backgroundColor = buttonStyle.backgroundColor!)}
-//               >
-//                 Preview
-//               </Button>
-//             </Link>
-//           )}
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-
-
-import { useState, useEffect, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useCV } from "../context/useCV";
-import type { CVData } from "../types/cv";
+import { previewCV } from "../services/api";
+import type { Location } from "react-router-dom";
 
 import PersonalInfoForm from "../components/forms/PersonalInfoForm";
 import WorkExperienceForm from "../components/forms/WorkExperienceForm";
@@ -192,9 +17,11 @@ import { Button } from "../components/ui/Button";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 
 export default function Builder() {
-  const { loadExample, reset, cv, setCV } = useCV();
+  const { cv, loadExample, reset } = useCV();
+  const navigate = useNavigate();
+  const location = useLocation() as Location & { state?: { resetStep?: boolean } };
 
-  // ✅ Memoized steps definition to prevent unnecessary re-renders
+  // MEMOIZED STEPS (prevents re-rendering)
   const steps = useMemo(
     () => [
       { id: "personal", title: "Personal Info", component: <PersonalInfoForm /> },
@@ -209,59 +36,85 @@ export default function Builder() {
     []
   );
 
-  // ✅ Local storage for builder progress
-  const [storedIndex, setStoredIndex] = useLocalStorage<number>("builderStep", 0);
+  // LOAD SAVED STEP FROM LOCAL STORAGE
+  const [storedIndex, setStoredIndex] = useLocalStorage("builderStep", 0);
   const [index, setIndex] = useState<number>(0);
 
-  // ✅ Load correct step on mount
+  // STABLE FUNCTION: update step index
+  const updateStep = useCallback(
+    (newIndex: number) => {
+      const safeIndex = Math.max(0, Math.min(newIndex, steps.length - 1));
+      setIndex(safeIndex);
+      setStoredIndex(safeIndex);
+    },
+    [steps.length, setStoredIndex]
+  );
+
+  // Handle reset when returning from Preview
   useEffect(() => {
-    const validIndex =
+    if (location.state?.resetStep) {
+      updateStep(0);
+
+      // Prevents repeating the reset every render
+      navigate(".", { replace: true, state: {} });
+      return;
+    }
+
+    // Validate index from local storage
+    const valid =
       typeof storedIndex === "number" &&
       storedIndex >= 0 &&
       storedIndex < steps.length
         ? storedIndex
         : 0;
-    setIndex(validIndex);
-  }, [storedIndex, steps.length]);
 
-  // ✅ Save index whenever it changes
-  useEffect(() => {
-    setStoredIndex(index);
-  }, [index, setStoredIndex]);
+    updateStep(valid);
+  }, [location.state, storedIndex, steps.length, navigate, updateStep]);
 
-  // ✅ Sync CV data to localStorage
-  const [savedCV, setSavedCV] = useLocalStorage<CVData>("builderCV", cv);
-  useEffect(() => {
-    setSavedCV(cv);
-  }, [cv, setSavedCV]);
+  // LOAD EXAMPLE
+  const handleLoadExample = useCallback(async () => {
+    await loadExample();
+    alert("Example CV loaded! You can now edit it or go to Preview.");
+  }, [loadExample]);
 
-  // ✅ Restore saved CV data
-  useEffect(() => {
-    if (savedCV && Object.keys(savedCV).length > 0) {
-      setCV(savedCV);
+
+  // PREVIEW HANDLER
+  const handlePreview = async () => {
+    try {
+      const html = await previewCV(cv); // cv is guaranteed to match CVData
+      console.log("Preview HTML:", html.data);
+      navigate("/preview"); // navigate to preview page if needed
+    } catch (err) {
+      console.error("Failed to preview CV", err);
     }
-  }, [savedCV, setCV]);
+  };
 
-  // === Inline Styles ===
+  // INLINE STYLES
   const containerStyle: React.CSSProperties = {
     display: "flex",
     flexDirection: "column",
     gap: "1.5rem",
     padding: "2rem",
-    maxWidth: "800px",
+    width: "95%",
+    maxWidth: "1000px",
     margin: "0 auto",
     fontFamily: "Inter, Arial, sans-serif",
+    boxSizing: "border-box",
   };
 
   const headerStyle: React.CSSProperties = {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
+    flexWrap: "wrap",
+    gap: "0.75rem",
   };
 
   const buttonGroupStyle: React.CSSProperties = {
     display: "flex",
+    flexWrap: "wrap",
     gap: "0.5rem",
+    justifyContent: "center",
   };
 
   const stepContainerStyle: React.CSSProperties = {
@@ -271,18 +124,24 @@ export default function Builder() {
     borderRadius: "1rem",
     boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
     backgroundColor: "#ffffff",
+    width: "100%",
+    overflowX: "auto",
   };
 
   const navContainerStyle: React.CSSProperties = {
     display: "flex",
+    flexDirection: "column",
+    gap: "1rem",
     justifyContent: "space-between",
-    alignItems: "center",
+    alignItems: "stretch",
     marginTop: "1.5rem",
   };
 
   const navButtonGroupStyle: React.CSSProperties = {
     display: "flex",
+    flexWrap: "wrap",
     gap: "0.5rem",
+    justifyContent: "center",
     alignItems: "center",
   };
 
@@ -296,6 +155,9 @@ export default function Builder() {
     border: "none",
     transition: "all 0.2s ease-in-out",
     boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+    minWidth: "120px",
+    flex: "1 1 auto",
+    textAlign: "center",
   };
 
   const buttonHoverStyle: React.CSSProperties = {
@@ -316,62 +178,52 @@ export default function Builder() {
     marginTop: "0.5rem",
   };
 
+  // JSX RENDER
   return (
     <div style={containerStyle}>
-      {/* Header */}
+      {/* HEADER BUTTONS */}
       <div style={headerStyle}>
         <div style={buttonGroupStyle}>
           <Button
+            type="button"
             variant="secondary"
-            onClick={loadExample}
+            onClick={handleLoadExample}
             style={buttonStyle}
-            onMouseOver={(e) =>
-              (e.currentTarget.style.backgroundColor = buttonHoverStyle.backgroundColor!)
-            }
-            onMouseOut={(e) =>
-              (e.currentTarget.style.backgroundColor = buttonStyle.backgroundColor!)
-            }
+            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = buttonHoverStyle.backgroundColor!)}
+            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = buttonStyle.backgroundColor!)}
           >
             Load Example
           </Button>
 
           <Button
+            type="button"
             variant="outline"
             onClick={reset}
             style={buttonStyle}
-            onMouseOver={(e) =>
-              (e.currentTarget.style.backgroundColor = buttonHoverStyle.backgroundColor!)
-            }
-            onMouseOut={(e) =>
-              (e.currentTarget.style.backgroundColor = buttonStyle.backgroundColor!)
-            }
+            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = buttonHoverStyle.backgroundColor!)}
+            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = buttonStyle.backgroundColor!)}
           >
             Reset
           </Button>
         </div>
       </div>
 
-      {/* Step Title */}
+      {/* STEP TITLE */}
       <div style={stepTitleStyle}>{steps[index].title}</div>
 
-      {/* Current Step Component */}
+      {/* STEP CONTENT */}
       <div style={stepContainerStyle}>{steps[index].component}</div>
 
-      {/* Navigation */}
+      {/* NAVIGATION */}
       <div style={navContainerStyle}>
         <Button
+          type="button"
           variant="outline"
           disabled={index === 0}
-          onClick={() => index > 0 && setIndex((i) => i - 1)}
+          onClick={() => updateStep(index - 1)}
           style={index === 0 ? disabledButtonStyle : buttonStyle}
-          onMouseOver={(e) => {
-            if (index !== 0)
-              e.currentTarget.style.backgroundColor = buttonHoverStyle.backgroundColor!;
-          }}
-          onMouseOut={(e) => {
-            if (index !== 0)
-              e.currentTarget.style.backgroundColor = buttonStyle.backgroundColor!;
-          }}
+          onMouseOver={(e) => index !== 0 && (e.currentTarget.style.backgroundColor = buttonHoverStyle.backgroundColor!)}
+          onMouseOut={(e) => index !== 0 && (e.currentTarget.style.backgroundColor = buttonStyle.backgroundColor!)}
         >
           Back
         </Button>
@@ -379,43 +231,42 @@ export default function Builder() {
         <div style={navButtonGroupStyle}>
           {index < steps.length - 1 ? (
             <Button
+              type="button"
               variant="primary"
-              onClick={() => setIndex((i) => Math.min(i + 1, steps.length - 1))}
+              onClick={() => updateStep(index + 1)}
               style={buttonStyle}
-              onMouseOver={(e) =>
-                (e.currentTarget.style.backgroundColor = buttonHoverStyle.backgroundColor!)
-              }
-              onMouseOut={(e) =>
-                (e.currentTarget.style.backgroundColor = buttonStyle.backgroundColor!)
-              }
+              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = buttonHoverStyle.backgroundColor!)}
+              onMouseOut={(e) => (e.currentTarget.style.backgroundColor = buttonStyle.backgroundColor!)}
             >
               Next
             </Button>
           ) : (
-            <Link to="/preview" style={{ textDecoration: "none" }}>
-              <Button
-                variant="primary"
-                style={buttonStyle}
-                onMouseOver={(e) =>
-                  (e.currentTarget.style.backgroundColor = buttonHoverStyle.backgroundColor!)
-                }
-                onMouseOut={(e) =>
-                  (e.currentTarget.style.backgroundColor = buttonStyle.backgroundColor!)
-                }
-              >
-                Preview
-              </Button>
-            </Link>
+            <Button
+              type="button"
+              variant="primary"
+              onClick={handlePreview}
+              style={buttonStyle}
+              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = buttonHoverStyle.backgroundColor!)}
+              onMouseOut={(e) => (e.currentTarget.style.backgroundColor = buttonStyle.backgroundColor!)}
+            >
+              Preview
+            </Button>
           )}
+
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={handlePreview}
+            style={buttonStyle}
+            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = buttonHoverStyle.backgroundColor!)}
+            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = buttonStyle.backgroundColor!)}
+          >
+            Go to Preview
+          </Button>
         </div>
       </div>
     </div>
   );
 }
-
-
-
-
-
 
 

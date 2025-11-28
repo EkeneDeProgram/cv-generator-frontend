@@ -1,6 +1,6 @@
 # 📄 CV Generator Frontend
 
-A modern, interactive **CV / Resume generator** built with **React**, **TypeScript**, **Vite**, **TailwindCSS**, and **React Hook Form**. Let users create, edit, preview and download professional CVs using clean UI components and dynamic templates.
+A modern, interactive **CV / Resume generator** built with **React**, **TypeScript**, **Vite**, **TailwindCSS**, **CSS**, and **React Hook Form**. Let users create, edit, preview and download professional CVs using clean UI components and dynamic templates.
 
 ---
 
@@ -61,6 +61,7 @@ A modern, interactive **CV / Resume generator** built with **React**, **TypeScri
 - React Hook Form
 - Zod validation
 - TailwindCSS
+- CSS
 - Axios
 - ESLint + TypeScript ESLint
 

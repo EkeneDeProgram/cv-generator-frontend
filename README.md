@@ -22,9 +22,9 @@ A modern, interactive **CV / Resume generator** built with **React**, **TypeScri
 - [Pages](#📄pages)
 - [Data](#🗂data)
 - [Styling](#🎨styling)
-- [Deployment](#deployment)
-- [Contributing](#contributing)
-- [License](#license)
+- [Deployment](#📦deployment)
+- [Contributing](#🤝contributing)
+- [License](#📜license)
 - [Acknowledgements](#acknowledgements)
 
 ---
@@ -203,7 +203,7 @@ The project uses:
 - Custom UI components located in **src/components/ui/**
 
 ---
-## Deployment
+## 📦Deployment
 
 This app can be deployed to static hosts such as Vercel, Netlify, or GitHub Pages.
 
@@ -215,7 +215,7 @@ Example (Vercel):
 
 ---
 
-## Contributing
+## 🤝Contributing
 
 1. Fork the repo
 2. Create a branch: `git checkout -b feat/your-feature`
@@ -226,7 +226,7 @@ Please follow the existing code style and keep commits atomic.
 
 ---
 
-## License
+## 📜License
 
 This project is available under the **MIT License**. See `LICENSE` for details.
 

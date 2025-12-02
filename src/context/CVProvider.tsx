@@ -68,7 +68,7 @@ export function CVProvider({ children }: { children: React.ReactNode }) {
     setCVState(defaultCV);
   }, []);
 
-  // 🟢 Memoized context value so children don't re-render infinitely
+  // Memoized context value so children don't re-render infinitely
   const value = useMemo(
     () => ({
       cv,

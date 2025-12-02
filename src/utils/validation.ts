@@ -1,7 +1,7 @@
 import { z, type ZodType } from "zod";
 import type { CVData } from "../types/cv";
 
-// ✅ Personal Info
+// Personal Info
 export const personalInfoSchema = z.object({
   name: z.string().min(2),
   email: z.string().email(),
@@ -10,10 +10,10 @@ export const personalInfoSchema = z.object({
   linkedin: z.string().url().optional(),
   github: z.string().url().optional(),
   portfolio: z.string().url().optional(),
-  socialLinks: z.array(z.string().url()).optional(), // renamed from socials
+  socialLinks: z.array(z.string().url()).optional(), 
 });
 
-// ✅ Work Experience
+// Work Experience
 export const workItemSchema = z.object({
   id: z.string().optional(),
   company: z.string().min(1),
@@ -23,7 +23,7 @@ export const workItemSchema = z.object({
   description: z.union([z.string().min(1), z.array(z.string().min(1))]), // string | string[]
 });
 
-// ✅ Education
+// Education
 export const eduItemSchema = z.object({
   id: z.string().optional(),
   institution: z.string().min(1), // backend uses institution
@@ -32,7 +32,7 @@ export const eduItemSchema = z.object({
   endDate: z.string().optional(),
 });
 
-// ✅ Projects
+// Projects
 export const projectSchema = z.object({
   id: z.string().optional(),
   title: z.string().min(1),
@@ -40,13 +40,13 @@ export const projectSchema = z.object({
   link: z.string().url().optional(),
 });
 
-// ✅ Skills with categories
+// Skills with categories
 export const skillSchema = z.object({
   category: z.string().min(1),
   items: z.array(z.string().min(1)),
 });
 
-// ✅ DocxParts (optional for backend rendering)
+// DocxParts (optional for backend rendering)
 export const docxPartsSchema = z.object({
   summary: z.array(z.unknown()),
   workExperience: z.array(z.unknown()),
@@ -54,7 +54,7 @@ export const docxPartsSchema = z.object({
   achievements: z.array(z.unknown()),
 });
 
-// ✅ Full CV Schema
+// Full CV Schema
 export const cvSchema = z.object({
   personalInfo: personalInfoSchema,
   summary: z.string().optional(),
@@ -64,19 +64,14 @@ export const cvSchema = z.object({
   skills: z.array(skillSchema), // structured skills, not just string[]
   achievements: z.array(z.string()),
   template: z.enum([
-    "classic",
     "modern",
-    "creative",
-    "card-based",
-    "two-column",
-    "two-column-pro",
-    "modern-pro",
-    "card-based-pro",
+    "card",
+    "twoColumn",
   ]),
   colorScheme: z.string(), // required (backend requires it)
   fontStyle: z.string(),   // required (backend requires it)
   _docxParts: docxPartsSchema.optional(),
-}) satisfies ZodType<CVData>; // ✅ ensures schema matches CVData
+}) satisfies ZodType<CVData>; // ensures schema matches CVData
 
-// ✅ Helpful TypeScript type inferred from Zod
+// Helpful TypeScript type inferred from Zod
 export type CVFormSchema = z.infer<typeof cvSchema>;

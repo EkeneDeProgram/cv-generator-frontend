@@ -5,9 +5,11 @@ import Preview from "./pages/Preview";
 import { CVProvider } from "./context/CVProvider";
 
 
+/* Root component of the CV Generator frontend application. */
 
 export default function App() {
   return (
+    // Global CV context provider for state management across the app
     <CVProvider>
       <BrowserRouter>
         <main className="max-w-6xl mx-auto p-4">

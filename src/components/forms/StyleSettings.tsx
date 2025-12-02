@@ -14,7 +14,7 @@ export default function StyleSettings() {
 
   const debouncedCV = useDebounce(cv, 500);
 
-  // Auto save effect with ✔ checkmark
+  // Auto save effect with checkmark
   useEffect(() => {
     setIsSaving(true);
     setSaved(false);

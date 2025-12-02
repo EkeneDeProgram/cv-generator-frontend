@@ -33,7 +33,7 @@ export default function SummaryForm() {
 
   // Auto-save whenever debounced summary changes
   useEffect(() => {
-    if (debouncedSummary === cv.summary) return; // ❗ Prevent saving same value
+    if (debouncedSummary === cv.summary) return; // Prevent saving same value
 
     setIsSaving(true);
 

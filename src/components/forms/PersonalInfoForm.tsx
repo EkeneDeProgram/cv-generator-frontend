@@ -31,19 +31,19 @@ export default function PersonalInfoForm() {
   useEffect(() => {
     if (!isDirty) return;
 
-    const hasChanged = JSON.stringify(cv.personalInfo) !== JSON.stringify(watchedFields);
+    const hasChanged =
+      JSON.stringify(cv.personalInfo) !== JSON.stringify(watchedFields);
     if (!hasChanged) return;
 
     setIsSaving(true);
 
-    setCV(prev => ({
+    setCV((prev) => ({
       ...prev,
       personalInfo: watchedFields,
     }));
 
     setTimeout(() => setIsSaving(false), 300);
   }, [watchedFields, cv.personalInfo, setCV, isDirty]);
-
 
   /* ---------- Responsive Styles ---------- */
 
@@ -58,8 +58,6 @@ export default function PersonalInfoForm() {
     backgroundColor: "#f9fafb",
     borderRadius: "1rem",
     fontFamily: "Arial, sans-serif",
-
-    // Mobile-friendly spacing
     boxSizing: "border-box",
   };
 
@@ -94,8 +92,6 @@ export default function PersonalInfoForm() {
     cursor: isSaving ? "not-allowed" : "pointer",
     transition: "0.2s ease",
     marginTop: "1rem",
-
-    // Full width on mobile, auto on desktop
     width: "100%",
     maxWidth: "220px",
   };
@@ -106,39 +102,72 @@ export default function PersonalInfoForm() {
         Personal Information
       </h2>
 
-      {["name", "email", "contact", "linkedin"].map(field => (
-        <div key={field} style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-          <label style={labelStyle}>
-            {field.charAt(0).toUpperCase() + field.slice(1)}
-          </label>
+      {[
+        { name: "name", label: "Name" },
+        { name: "email", label: "Email" },
+        { name: "contact", label: "Contact" },
+        { name: "address", label: "Address" },
+        { name: "linkedin", label: "LinkedIn (optional)" },
+        { name: "github", label: "GitHub (optional)" },
+        { name: "portfolio", label: "Portfolio (optional)" },
+      ].map(({ name, label }) => (
+        <div
+          key={name}
+          style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}
+        >
+          <label style={labelStyle}>{label}</label>
 
           <input
-            {...register(field as keyof FormType)}
-            placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
+            {...register(name as keyof FormType)}
+            placeholder={label}
             style={inputStyle}
-            onFocus={e => {
+            onFocus={(e) => {
               e.currentTarget.style.borderColor = "#4f46e5";
-              e.currentTarget.style.boxShadow = "0 0 0 2px rgba(79,70,229,0.15)";
+              e.currentTarget.style.boxShadow =
+                "0 0 0 2px rgba(79,70,229,0.15)";
             }}
-            onBlur={e => {
+            onBlur={(e) => {
               e.currentTarget.style.borderColor = "#d1d5db";
               e.currentTarget.style.boxShadow = "none";
             }}
           />
 
-          {errors[field as keyof FormType] && (
+          {errors[name as keyof FormType] && (
             <span style={errorTextStyle}>
-              {errors[field as keyof FormType]?.message}
+              {errors[name as keyof FormType]?.message}
             </span>
           )}
         </div>
       ))}
 
-      <button
-        type="button"
-        style={buttonStyle}
-        disabled={isSaving}
-      >
+      {/* Social Links (Optional) */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+        <label style={labelStyle}>
+          Social Links (optional, comma separated)
+        </label>
+
+        <input
+          placeholder="https://twitter.com/you, https://medium.com/@you"
+          style={inputStyle}
+          defaultValue={(cv.personalInfo.socialLinks || []).join(", ")}
+          onChange={(e) => {
+            const links = e.target.value
+              .split(",")
+              .map((v) => v.trim())
+              .filter(Boolean);
+
+            setCV((prev) => ({
+              ...prev,
+              personalInfo: {
+                ...prev.personalInfo,
+                socialLinks: links,
+              },
+            }));
+          }}
+        />
+      </div>
+
+      <button type="button" style={buttonStyle} disabled={isSaving}>
         {isSaving ? "Saving..." : "Save Personal Info"}
       </button>
     </form>

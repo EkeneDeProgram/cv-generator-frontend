@@ -5,8 +5,7 @@ import { z } from "zod";
 import { useCV } from "../../context/useCV";
 import { v4 as uuidv4 } from "uuid";
 import { useDebounce } from "../../hooks/useDebounce";
-import { useEffect, useState, useMemo } from "react";
-import { useSyncFormWithCV } from "../../utils/useSyncFormWithCV";
+import { useEffect, useState, useRef } from "react";
 
 // Schema
 const schema = z.object({
@@ -17,6 +16,8 @@ type FormType = z.infer<typeof schema>;
 export default function WorkExperienceForm() {
   const { cv, setCV } = useCV();
   const [isSaving, setIsSaving] = useState(false);
+
+  const hasMountedRef = useRef(false);
 
   // Form setup
   const { control, register, watch, reset } = useForm<FormType>({
@@ -30,28 +31,54 @@ export default function WorkExperienceForm() {
     mode: "onChange",
   });
 
-  const slice = useMemo(() => {
-    return cv.workExperience.length
-      ? { workExperience: cv.workExperience }
-      : { workExperience: [{ id: uuidv4(), company: "", role: "", startDate: "", description: "" }] };
-  }, [cv.workExperience]);
-
-  useSyncFormWithCV(slice, reset);
-
-  const { fields, append, remove } = useFieldArray({ control, name: "workExperience" });
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "workExperience",
+  });
 
   const watched = watch("workExperience");
   const debounced = useDebounce(watched, 500);
 
-  // Auto-save
+  // Sync CV → Form ONLY when CV changes externally
+  // We intentionally do NOT include `watched` in deps.
+ // This effect must only run when CV changes externally.
   useEffect(() => {
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      return;
+    }
+
+    const formStr = JSON.stringify(watched);
+    const cvStr = JSON.stringify(cv.workExperience);
+
+    if (formStr !== cvStr) {
+      reset({
+        workExperience:
+          cv.workExperience.length > 0
+            ? cv.workExperience
+            : [{ id: uuidv4(), company: "", role: "", startDate: "", description: "" }],
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cv.workExperience, reset]); // intentionally NOT watching `watched`
+
+  // Auto-save Form → CV (guarded)
+  useEffect(() => {
+    const hasChanged =
+      JSON.stringify(cv.workExperience) !== JSON.stringify(debounced);
+
+    if (!hasChanged) return;
+
     setIsSaving(true);
 
-    setCV((prev) => ({ ...prev, workExperience: debounced }));
+    setCV((prev) => ({
+      ...prev,
+      workExperience: debounced,
+    }));
 
-    const timer = setTimeout(() => setIsSaving(false), 600);
+    const timer = setTimeout(() => setIsSaving(false), 500);
     return () => clearTimeout(timer);
-  }, [debounced, setCV]);
+  }, [debounced, cv.workExperience, setCV]);
 
   // Styles
   const wrapper: React.CSSProperties = {
@@ -111,127 +138,84 @@ export default function WorkExperienceForm() {
   const removeBtn = { ...btnBase, backgroundColor: "#fee2e2", color: "#b91c1c" };
 
   return (
-    <>
-      {/* RESPONSIVE MEDIA QUERIES */}
-      <style>
-        {`
-          /* Phones < 480px */
-          @media (max-width: 480px) {
-            .work-wrapper {
-              padding: 1rem !important;
-            }
-            .work-card {
-              padding: 0.75rem !important;
-            }
-            .work-input,
-            .work-textarea {
-              font-size: 0.9rem !important;
-              padding: 0.6rem !important;
-            }
-            .work-buttons button {
-              width: 100% !important;
-            }
-          }
+    <form className="work-wrapper" style={wrapper}>
+      <h2 style={{ fontSize: "1.5rem", fontWeight: 700, color: "#1f2937" }}>
+        Work Experience
+      </h2>
 
-          /* Tablets ≥ 768px */
-          @media (min-width: 768px) {
-            .work-wrapper {
-              padding: 3rem !important;
-            }
-            .work-card {
-              padding: 1.5rem !important;
-            }
-          }
+      {fields.map((f, idx) => (
+        <div key={f.id} className="work-card" style={card}>
+          <input
+            {...register(`workExperience.${idx}.company`)}
+            placeholder="Company"
+            style={input}
+            onFocus={(e) => Object.assign(e.currentTarget.style, focusStyle)}
+            onBlur={(e) => (e.currentTarget.style.borderColor = "#d1d5db")}
+          />
 
-          /* Large screens ≥ 1200px */
-          @media (min-width: 1200px) {
-            .work-wrapper {
-              max-width: 850px !important;
-            }
-          }
-        `}
-      </style>
+          <input
+            {...register(`workExperience.${idx}.role`)}
+            placeholder="Role"
+            style={input}
+            onFocus={(e) => Object.assign(e.currentTarget.style, focusStyle)}
+            onBlur={(e) => (e.currentTarget.style.borderColor = "#d1d5db")}
+          />
 
-      <form className="work-wrapper" style={wrapper}>
-        <h2 style={{ fontSize: "1.5rem", fontWeight: 700, color: "#1f2937" }}>
-          Work Experience
-        </h2>
+          <input
+            {...register(`workExperience.${idx}.startDate`)}
+            placeholder="Start Date"
+            style={input}
+            onFocus={(e) => Object.assign(e.currentTarget.style, focusStyle)}
+            onBlur={(e) => (e.currentTarget.style.borderColor = "#d1d5db")}
+          />
 
-        {fields.map((f, idx) => (
-          <div key={f.id} className="work-card" style={card}>
-            <input
-              {...register(`workExperience.${idx}.company`)}
-              placeholder="Company"
-              className="work-input"
-              style={input}
-              onFocus={(e) => Object.assign(e.currentTarget.style, focusStyle)}
-              onBlur={(e) => (e.currentTarget.style.borderColor = "#d1d5db")}
-            />
+          <textarea
+            {...register(`workExperience.${idx}.description`)}
+            placeholder="Description"
+            style={textarea}
+            onFocus={(e) => Object.assign(e.currentTarget.style, focusStyle)}
+            onBlur={(e) => (e.currentTarget.style.borderColor = "#d1d5db")}
+          />
 
-            <input
-              {...register(`workExperience.${idx}.role`)}
-              placeholder="Role"
-              className="work-input"
-              style={input}
-              onFocus={(e) => Object.assign(e.currentTarget.style, focusStyle)}
-              onBlur={(e) => (e.currentTarget.style.borderColor = "#d1d5db")}
-            />
-
-            <input
-              {...register(`workExperience.${idx}.startDate`)}
-              placeholder="Start Date"
-              className="work-input"
-              style={input}
-              onFocus={(e) => Object.assign(e.currentTarget.style, focusStyle)}
-              onBlur={(e) => (e.currentTarget.style.borderColor = "#d1d5db")}
-            />
-
-            <textarea
-              {...register(`workExperience.${idx}.description`)}
-              placeholder="Description"
-              className="work-textarea"
-              style={textarea}
-              onFocus={(e) => Object.assign(e.currentTarget.style, focusStyle)}
-              onBlur={(e) => (e.currentTarget.style.borderColor = "#d1d5db")}
-            />
-
-            <button type="button" style={removeBtn} onClick={() => remove(idx)}>
-              Remove
-            </button>
-          </div>
-        ))}
-
-        {/* Buttons */}
-        <div className="work-buttons" style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-          <button
-            type="button"
-            style={addBtn}
-            onClick={() =>
-              append({
-                id: uuidv4(),
-                company: "",
-                role: "",
-                startDate: "",
-                description: "",
-              })
-            }
-          >
-            Add Work
-          </button>
-
-          <button type="button" style={saveBtn}>
-            Save Work
+          <button type="button" style={removeBtn} onClick={() => remove(idx)}>
+            Remove
           </button>
         </div>
+      ))}
 
-        <div style={{ marginTop: "0.5rem" }}>
-          {isSaving ? (
-            <span style={{ fontSize: "0.9rem", color: "#6b7280" }}>Auto-saving...</span>
-          ) : (
-            <span style={{ fontSize: "0.9rem", color: "#10b981" }}>Saved ✓</span>
-          )}
-        </div>
-      </form>
-    </>
+      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+        <button
+          type="button"
+          style={addBtn}
+          onClick={() =>
+            append({
+              id: uuidv4(),
+              company: "",
+              role: "",
+              startDate: "",
+              description: "",
+            })
+          }
+        >
+          Add Work
+        </button>
+
+        <button type="button" style={saveBtn}>
+          Save Work
+        </button>
+      </div>
+
+      <div style={{ marginTop: "0.5rem" }}>
+        {isSaving ? (
+          <span style={{ fontSize: "0.9rem", color: "#6b7280" }}>
+            Auto-saving...
+          </span>
+        ) : (
+          <span style={{ fontSize: "0.9rem", color: "#10b981" }}>
+            Saved ✓
+          </span>
+        )}
+      </div>
+    </form>
   );
 }

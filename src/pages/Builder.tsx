@@ -21,17 +21,17 @@ export default function Builder() {
   const navigate = useNavigate();
   const location = useLocation() as Location & { state?: { resetStep?: boolean } };
 
-  // MEMOIZED STEPS (prevents re-rendering)
+  // MEMOIZED STEPS (only component references, not instances)
   const steps = useMemo(
     () => [
-      { id: "personal", title: "Personal Info", component: <PersonalInfoForm /> },
-      { id: "work", title: "Work Experience", component: <WorkExperienceForm /> },
-      { id: "education", title: "Education", component: <EducationForm /> },
-      { id: "projects", title: "Projects", component: <ProjectsForm /> },
-      { id: "skills", title: "Skills", component: <SkillsForm /> },
-      { id: "achievements", title: "Achievements", component: <AchievementsForm /> },
-      { id: "summary", title: "Summary", component: <SummaryForm /> },
-      { id: "style", title: "Style Settings", component: <StyleSettings /> },
+      { id: "personal", title: "Personal Info", component: PersonalInfoForm },
+      { id: "work", title: "Work Experience", component: WorkExperienceForm },
+      { id: "education", title: "Education", component: EducationForm },
+      { id: "projects", title: "Projects", component: ProjectsForm },
+      { id: "skills", title: "Skills", component: SkillsForm },
+      { id: "achievements", title: "Achievements", component: AchievementsForm },
+      { id: "summary", title: "Summary", component: SummaryForm },
+      { id: "style", title: "Style Settings", component: StyleSettings },
     ],
     []
   );
@@ -54,13 +54,10 @@ export default function Builder() {
   useEffect(() => {
     if (location.state?.resetStep) {
       updateStep(0);
-
-      // Prevents repeating the reset every render
       navigate(".", { replace: true, state: {} });
       return;
     }
 
-    // Validate index from local storage
     const valid =
       typeof storedIndex === "number" &&
       storedIndex >= 0 &&
@@ -74,16 +71,23 @@ export default function Builder() {
   // LOAD EXAMPLE
   const handleLoadExample = useCallback(async () => {
     await loadExample();
+    // Force re-render by updating a key (we can just use CV's timestamp)
+    setIndex((prev) => prev); // triggers Builder re-render if needed
     alert("Example CV loaded! You can now edit it or go to Preview.");
   }, [loadExample]);
 
+  // RESET HANDLER
+  const handleReset = useCallback(() => {
+    reset();
+    setIndex((prev) => prev); // Force re-render to refresh the current step immediately
+  }, [reset]);
 
   // PREVIEW HANDLER
   const handlePreview = async () => {
     try {
-      const html = await previewCV(cv); // cv is guaranteed to match CVData
+      const html = await previewCV(cv);
       console.log("Preview HTML:", html.data);
-      navigate("/preview"); // navigate to preview page if needed
+      navigate("/preview");
     } catch (err) {
       console.error("Failed to preview CV", err);
     }
@@ -189,8 +193,13 @@ export default function Builder() {
             variant="secondary"
             onClick={handleLoadExample}
             style={buttonStyle}
-            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = buttonHoverStyle.backgroundColor!)}
-            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = buttonStyle.backgroundColor!)}
+            onMouseOver={(e) =>
+              (e.currentTarget.style.backgroundColor =
+                buttonHoverStyle.backgroundColor!)
+            }
+            onMouseOut={(e) =>
+              (e.currentTarget.style.backgroundColor = buttonStyle.backgroundColor!)
+            }
           >
             Load Example
           </Button>
@@ -198,10 +207,15 @@ export default function Builder() {
           <Button
             type="button"
             variant="outline"
-            onClick={reset}
+            onClick={handleReset}
             style={buttonStyle}
-            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = buttonHoverStyle.backgroundColor!)}
-            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = buttonStyle.backgroundColor!)}
+            onMouseOver={(e) =>
+              (e.currentTarget.style.backgroundColor =
+                buttonHoverStyle.backgroundColor!)
+            }
+            onMouseOut={(e) =>
+              (e.currentTarget.style.backgroundColor = buttonStyle.backgroundColor!)
+            }
           >
             Reset
           </Button>
@@ -212,7 +226,13 @@ export default function Builder() {
       <div style={stepTitleStyle}>{steps[index].title}</div>
 
       {/* STEP CONTENT */}
-      <div style={stepContainerStyle}>{steps[index].component}</div>
+      <div style={stepContainerStyle}>
+        {(() => {
+          const StepComponent = steps[index].component;
+          // Use key to force re-render whenever cv changes
+          return <StepComponent key={`${steps[index].id}-${JSON.stringify(cv.personalInfo)}`} />;
+        })()}
+      </div>
 
       {/* NAVIGATION */}
       <div style={navContainerStyle}>
@@ -222,8 +242,14 @@ export default function Builder() {
           disabled={index === 0}
           onClick={() => updateStep(index - 1)}
           style={index === 0 ? disabledButtonStyle : buttonStyle}
-          onMouseOver={(e) => index !== 0 && (e.currentTarget.style.backgroundColor = buttonHoverStyle.backgroundColor!)}
-          onMouseOut={(e) => index !== 0 && (e.currentTarget.style.backgroundColor = buttonStyle.backgroundColor!)}
+          onMouseOver={(e) =>
+            index !== 0 &&
+            (e.currentTarget.style.backgroundColor = buttonHoverStyle.backgroundColor!)
+          }
+          onMouseOut={(e) =>
+            index !== 0 &&
+            (e.currentTarget.style.backgroundColor = buttonStyle.backgroundColor!)
+          }
         >
           Back
         </Button>
@@ -235,8 +261,12 @@ export default function Builder() {
               variant="primary"
               onClick={() => updateStep(index + 1)}
               style={buttonStyle}
-              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = buttonHoverStyle.backgroundColor!)}
-              onMouseOut={(e) => (e.currentTarget.style.backgroundColor = buttonStyle.backgroundColor!)}
+              onMouseOver={(e) =>
+                (e.currentTarget.style.backgroundColor = buttonHoverStyle.backgroundColor!)
+              }
+              onMouseOut={(e) =>
+                (e.currentTarget.style.backgroundColor = buttonStyle.backgroundColor!)
+              }
             >
               Next
             </Button>
@@ -246,8 +276,12 @@ export default function Builder() {
               variant="primary"
               onClick={handlePreview}
               style={buttonStyle}
-              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = buttonHoverStyle.backgroundColor!)}
-              onMouseOut={(e) => (e.currentTarget.style.backgroundColor = buttonStyle.backgroundColor!)}
+              onMouseOver={(e) =>
+                (e.currentTarget.style.backgroundColor = buttonHoverStyle.backgroundColor!)
+              }
+              onMouseOut={(e) =>
+                (e.currentTarget.style.backgroundColor = buttonStyle.backgroundColor!)
+              }
             >
               Preview
             </Button>
@@ -258,8 +292,12 @@ export default function Builder() {
             variant="secondary"
             onClick={handlePreview}
             style={buttonStyle}
-            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = buttonHoverStyle.backgroundColor!)}
-            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = buttonStyle.backgroundColor!)}
+            onMouseOver={(e) =>
+              (e.currentTarget.style.backgroundColor = buttonHoverStyle.backgroundColor!)
+            }
+            onMouseOut={(e) =>
+              (e.currentTarget.style.backgroundColor = buttonStyle.backgroundColor!)
+            }
           >
             Go to Preview
           </Button>
@@ -268,5 +306,3 @@ export default function Builder() {
     </div>
   );
 }
-
-

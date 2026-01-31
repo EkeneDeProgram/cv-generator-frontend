@@ -29,24 +29,8 @@ export default function StyleSettings() {
     return () => clearTimeout(timer);
   }, [debouncedCV]);
 
-
-  const templateMap = {
-    Moderno: "modern",
-    Cardio: "card",
-    Bifrost: "twoColumn",
-  } as const;
-
-  type TemplateSelectKey = keyof typeof templateMap;
-  type TemplateValue = (typeof templateMap)[TemplateSelectKey];
-
-
   const handleChange = (field: keyof typeof cv, value: string) => {
-    if (field === "template") {
-      const key = value as TemplateSelectKey;
-      setCV((prev) => ({ ...prev, template: templateMap[key] }));
-    } else {
-      setCV((prev) => ({ ...prev, [field]: value }));
-    }
+    setCV((prev) => ({ ...prev, [field]: value }));
   };
 
   // Container
@@ -109,8 +93,7 @@ export default function StyleSettings() {
     opacity: isSaving ? 0.6 : 1,
   };
 
-
-  const templateTaglines: Record<TemplateValue, string> = {
+  const templateTaglines: Record<string, string> = {
     modern: "Sleek, minimalist, and contemporary layout for a clean professional look.",
     card: "Organized card-based layout for clear section separation and easy reading.",
     twoColumn: "Two-column layout for a structured, information-rich CV with elegant flow.",
@@ -159,9 +142,9 @@ export default function StyleSettings() {
             onChange={(e) => handleChange("template", e.target.value)}
             style={selectStyle}
           >
-            <option value="Moderno">Moderno</option>
-            <option value="Cardio">Cardio</option>
-            <option value="Bifrost">Bifrost</option>
+            <option value="modern">Moderno</option>
+            <option value="card">Cardio</option>
+            <option value="twoColumn">Bifrost</option>
           </select>
 
           <span style={{ fontSize: "0.85rem", color: "#6b7280", marginTop: "0.25rem" }}>

@@ -4,13 +4,13 @@ import { personalInfoSchema } from "../../utils/validation";
 import { z } from "zod";
 import { useCV } from "../../context/useCV";
 import { useState, useEffect } from "react";
-import { useSyncFormWithCV } from "../../utils/useSyncFormWithCV";
 
 type FormType = z.infer<typeof personalInfoSchema>;
 
 export default function PersonalInfoForm() {
   const { cv, setCV } = useCV();
   const [isSaving, setIsSaving] = useState(false);
+  const [socialLinksInput, setSocialLinksInput] = useState("");
 
   const {
     register,
@@ -23,11 +23,15 @@ export default function PersonalInfoForm() {
     mode: "onChange",
   });
 
-  // Sync form with CV
-  useSyncFormWithCV<FormType>(cv.personalInfo, reset);
+  // Sync all form fields when cv.personalInfo changes
+  useEffect(() => {
+    reset(cv.personalInfo); // updates all fields immediately
+    setSocialLinksInput((cv.personalInfo.socialLinks || []).join(", "));
+  }, [cv.personalInfo, reset]);
 
   const watchedFields = watch();
 
+  // Save changes to CV as user types
   useEffect(() => {
     if (!isDirty) return;
 
@@ -149,9 +153,12 @@ export default function PersonalInfoForm() {
         <input
           placeholder="https://twitter.com/you, https://medium.com/@you"
           style={inputStyle}
-          defaultValue={(cv.personalInfo.socialLinks || []).join(", ")}
+          value={socialLinksInput}
           onChange={(e) => {
-            const links = e.target.value
+            const value = e.target.value;
+            setSocialLinksInput(value);
+
+            const links = value
               .split(",")
               .map((v) => v.trim())
               .filter(Boolean);

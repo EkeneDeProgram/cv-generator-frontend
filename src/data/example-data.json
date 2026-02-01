@@ -1,66 +1,104 @@
 {
   "personalInfo": {
-    "name": "John Doe",
-    "email": "john.doe@example.com",
-    "contact": "+1234567890",
-    "address": "123 Main Street, New York, USA",
-    "linkedin": "https://linkedin.com/in/johndoe",
-    "github": "https://github.com/johndoe",
-    "portfolio": "https://johndoe.dev",
-    "socialLinks": ["https://twitter.com/johndoe"]
+    "name": "Ekene Onyekachi",
+    "email": "ekeneonyekachi1@gmail.com",
+    "contact": "+2349049153730",
+    "address": "Calabar, Cross River State, Nigeria",
+    "linkedin": "https://www.linkedin.com/in/ekenedeprogram",
+    "github": "https://github.com/EkeneDeProgram",
+    "portfolio": "https://portfolio-q8l2.onrender.com",
+    "socialLinks": ["https://x.com/KukiWorldwide"]
   },
-  "summary": "Backend engineer with 5+ years of experience building scalable systems in Python and Node.js.",
+  "summary": "Backend Developer with experience designing scalable APIs, business logic, and database systems using Node.js, Python, and MongoDB.",
   "workExperience": [
     {
-      "company": "TechCorp",
-      "role": "Senior Backend Engineer",
-      "startDate": "2020-01",
-      "endDate": "2023-06",
+      "company": "Innobee",
+      "role": "Product Developer",
+      "startDate": "2025-01",
+      "endDate": "2025-08",
       "description": [
-        "Led a team of 4 engineers to build a microservices-based platform",
-        "Optimized API performance, reducing latency by 35%"
+        "Designed and implemented REST APIs with Flask",
+        "Built backend business logic and MongoDB schemas",
+        "Implemented JWT-based authentication and role-based access control",
+        "Led backend engineering efforts",
+        "Ensured scalable and maintainable API architecture",
+        "Implemented pagination, input validation, and robust error handling",
+        "Documented APIs using Swagger / OpenAPI for internal and external developers"
       ]
     },
     {
-      "company": "StartupX",
-      "role": "Software Engineer",
-      "startDate": "2017-05",
-      "endDate": "2019-12",
-      "description": "Developed REST APIs and integrated third-party payment services."
+      "company": "Nobzo Ent",
+      "role": "Node.js Developer",
+      "startDate": "2025-09",
+      "endDate": "Present",
+      "description": [
+        "Developed backend APIs using Node.js and Express",
+        "Implemented JWT-based authentication and role-based access control",
+        "Integrated backend services with frontend applications",
+        "Optimized API performance and data handling",
+        "Implemented pagination, input validation, and comprehensive error handling",
+        "Documented APIs using Swagger / OpenAPI for easy developer consumption"
+    ]
     }
   ],
   "education": [
     {
-      "institution": "University of Example",
-      "degree": "B.Sc. in Computer Science",
-      "startDate": "2013-09",
-      "endDate": "2017-06"
+      "institution": "UNICROSS",
+      "degree": "Bachelor of Technology in Urban and Regional Planning",
+      "startDate": "2014-02",
+      "endDate": "2020-09"
+    },
+    {
+      "institution": "CS50",
+      "degree": "Certificate, CS50's Introduction to Programming with Python",
+      "startDate": "2021-01",
+      "endDate": "2021-05"
+    },
+    {
+      "institution": "Udacity",
+      "degree": "Certificate, Udacity Full Stack Developer Nanodegree",
+      "startDate": "2022-02",
+      "endDate": "2022-05"
     }
   ],
   "projects": [
     {
-      "title": "VisaVision",
-      "description": "A platform to analyze and visualize H-1B visa application data using Flask, MongoDB, and D3.js.",
-      "link": "https://github.com/johndoe/visavision"
+      "title": "Innovation Management Platform",
+      "description": "Backend services for a peer-to-peer innovation management system."
+    },
+    {
+      "title": "Admin Management Dashboard",
+      "description": "Full-stack admin management system with a Node.js backend providing REST APIs, authentication, and data persistence, integrated with a React-based admin interface for managing application data."
+    },
+    {
+      "title": "CV Generator Backend",
+      "description": "Node.js backend for managing CV data, templates, and PDF generation."
     }
   ],
   "skills": [
+
     {
-      "category": "Programming",
-      "items": ["Python", "Node.js", "JavaScript", "TypeScript"]
+      "category": "Backend",
+      "items": ["Node.js", "Express", "Python", "Flask", "TypeScript", "REST APIs"]
     },
     {
       "category": "Databases",
-      "items": ["MongoDB", "PostgreSQL"]
+      "items": ["MongoDB", "PostgreSQL", "Redis"]
     },
     {
-      "category": "Tools",
-      "items": ["Docker", "Git", "AWS"]
+      "category": "Tools & Platforms",
+      "items": [
+        "Git",
+        "GitHub",
+        "Docker",
+        "Postman"
+      ]
     }
   ],
   "achievements": [
-    "Winner of 2021 HackathonX",
-    "Published research paper on AI in healthcare"
+    "Led backend API design and architecture for a production web application",
+    "Implemented secure authentication and role-based access control",
+    "Improved API performance and data handling efficiency"
   ],
   "template": "modern",
   "colorScheme": "teal",

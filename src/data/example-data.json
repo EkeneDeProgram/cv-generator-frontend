@@ -9,37 +9,33 @@
     "portfolio": "https://portfolio-q8l2.onrender.com",
     "socialLinks": ["https://x.com/KukiWorldwide"]
   },
-  "summary": "Backend Developer with experience designing scalable APIs, business logic, and database systems using Node.js, Python, and MongoDB.",
+  "summary": "Python Developer specializing in building scalable, secure, and maintainable backend systems using Python, Flask, Django, and FastAPI. Experienced in designing REST APIs, handling authentication, role-based access, database architecture with MongoDB and PostgreSQL, and delivering production-ready applications. Passionate about problem-solving, performance optimization, and creating software that delivers real value.",
   "workExperience": [
     {
       "company": "Innobee",
-      "role": "Product Developer",
+      "role": "Python Backend Developer",
       "startDate": "2025-01",
       "endDate": "2025-08",
       "description": [
-        "Designed and implemented REST APIs with Flask",
-        "Built backend business logic and MongoDB schemas",
-        "Implemented JWT-based authentication and role-based access control",
-        "Led backend engineering efforts",
-        "Ensured scalable and maintainable API architecture",
-        "Implemented pagination, input validation, and robust error handling",
-        "Documented APIs using Swagger / OpenAPI for internal and external developers"
+        "Worked as a backend engineer designing and implementing RESTful APIs with Flask",
+       "Built robust backend business logic and MongoDB schemas", 
+       "implemented JWT-based authentication and role-based access control",
+       "ensured scalable and maintainable API architecture", 
+       "implemented pagination, input validation, and robust error handling", 
+       "documented APIs using Swagger/OpenAPI."
       ]
     },
     {
-      "company": "Nobzo Ent",
-      "role": "Node.js Developer",
-      "startDate": "2025-09",
-      "endDate": "Present",
+      "company": "Pilot One Software Solutions",
+      "role": "Backend Engineer (Python)",
+      "startDate": "2024-01",
+      "endDate": "2025-01",
       "description": [
-        "Developed backend APIs using Node.js and Express",
-        "Implemented JWT-based authentication and role-based access control",
-        "Integrated backend services with frontend applications",
-        "Optimized API performance and data handling",
-        "Implemented pagination, input validation, and comprehensive error handling",
-        "Documented APIs using Swagger / OpenAPI for easy developer consumption"
+      "Developed Food Delivery API with JWT-based authentication, role-based access control, pagination, input validation, and optimized PostgreSQL queries",
+      "Implemented Swagger/OpenAPI for API documentation, ensured robust error handling, and optimized backend performance",
+      "Collaborated with frontend developers to deliver production-ready applications and maintained clean, maintainable architectures"
     ]
-    }
+  }
   ],
   "education": [
     {
@@ -67,38 +63,34 @@
       "description": "Backend services for a peer-to-peer innovation management system."
     },
     {
-      "title": "Admin Management Dashboard",
-      "description": "Full-stack admin management system with a Node.js backend providing REST APIs, authentication, and data persistence, integrated with a React-based admin interface for managing application data."
+      "title": "Food Delivery API",
+      "description": "Developed backend services for a food delivery platform using Python (Django), including user, restaurant, order, and dispatch management. Implemented JWT-based authentication, role-based access control, pagination, input validation, error handling, and API documentation."
     },
     {
-      "title": "CV Generator Backend",
-      "description": "Node.js backend for managing CV data, templates, and PDF generation."
+      "title": "909ine Command-line Password Manager",
+      "description": "A user-friendly command-line password manager built in Python with SQLite and SQLAlchemy. Features include registering users, storing encrypted service passwords, JWT-based login, generating strong passwords, and retrieving/updating/deleting credentials. Implements hash & salt for master passwords, secure encryption for service passwords, and input validation for robust security."
+    },
+    {
+      "title": "VisaVision.com",
+      "description": "A web-based platform built with Python (Flask backend) providing comprehensive insights into H-1B visa applications. Features include employer analysis, approval predictions, reports, and data visualizations. Integrates MongoDB for storage, implements REST APIs, authentication, and scalable backend architecture, and provides AI-powered analytics for users."
     }
   ],
   "skills": [
-
     {
-      "category": "Backend",
-      "items": ["Node.js", "Express", "Python", "Flask", "TypeScript", "REST APIs"]
-    },
-    {
-      "category": "Databases",
-      "items": ["MongoDB", "PostgreSQL", "Redis"]
+      "category": "Backend / Python",
+      "items": ["Python", "Flask", "Django", "FastAPI", "REST APIs", "JWT Authentication", "Role-Based Access Control", "Input Validation", "Pagination", "Error Handling", "Swagger/OpenAPI", "SQLAlchemy", "SQLite", "MongoDB"]
     },
     {
       "category": "Tools & Platforms",
-      "items": [
-        "Git",
-        "GitHub",
-        "Docker",
-        "Postman"
-      ]
+      "items": ["Git", "GitHub", "Docker", "Postman", "Render"]
     }
   ],
   "achievements": [
-    "Led backend API design and architecture for a production web application",
-    "Implemented secure authentication and role-based access control",
-    "Improved API performance and data handling efficiency"
+    "Designed and implemented secure Python REST APIs with scalable architecture",
+    "Built 909ine, a full-featured command-line password manager with strong encryption",
+    "Developed VisaVision.com backend to handle large datasets and provide AI-powered insights",
+    "Delivered production-ready backend solutions integrated with React/Next.js frontends",
+    "Documented APIs and backend architecture for maintainability and team collaboration"
   ],
   "template": "modern",
   "colorScheme": "teal",
